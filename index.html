@@ -17,9 +17,12 @@
 <p id="farmContact">Address / Phone</p>
 <button onclick="editFarmInfo()">Edit Farm Info</button>
 
-<h2>Search Animal by Tag #</h2>
-<input id="searchTag" maxlength="4" placeholder="Tag #">
-<button onclick="searchByTag()">Search</button>
+<h2>Search Animal</h2>
+Tag #: <input id="searchTag" maxlength="4" placeholder="Tag #">
+<button onclick="searchByTag()">Search</button><br><br>
+
+Tattoo #: <input id="searchTattoo" maxlength="4" placeholder="Tattoo #">
+<button onclick="searchByTattoo()">Search</button>
 
 <h2>Add / Edit Animal</h2>
 <form id="animalForm" onsubmit="saveAnimal(); return false;">
@@ -311,6 +314,18 @@ function searchByTag(){
         editAnimal(idx);
     } else {
         alert("Tag not found");
+    }
+}
+
+function searchByTattoo(){
+    const tattoo = document.getElementById('searchTattoo').value.trim();
+    if(!tattoo) return;
+    const animals = getAnimals();
+    const idx = animals.findIndex(a => a.tattoo.toLowerCase() === tattoo.toLowerCase());
+    if(idx>=0){
+        editAnimal(idx);
+    } else {
+        alert("Tattoo not found");
     }
 }
 
