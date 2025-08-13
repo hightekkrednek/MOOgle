@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MOOgle - Your Farm Animal Tracker</title>
 <style>
-body { font-family: Arial, sans-serif; margin: 20px; background: #f8f8f8; }
-h1,h2,h3 { text-align:center; }
-label { display:block; margin:5px 0 2px; }
-input,select,textarea,button { padding:5px; margin-bottom:10px; width:100%; }
-table { width:100%; border-collapse: collapse; margin-top:20px;}
-th,td { border:1px solid #ccc; padding:8px; text-align:center;}
-button { cursor:pointer; }
-.overdue { background:#fdd; }
-.row { display:flex; gap:10px; flex-wrap:wrap; }
-.row>div { flex:1; min-width:150px; }
-.med-history { margin-bottom:5px; padding:5px; background:#eef; border-radius:5px;}
-.filter-section { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+body { font-family: Arial; margin:20px; background:#f8f8f8;}
+h1,h2,h3{text-align:center;}
+label{display:block;margin:5px 0 2px;}
+input,select,button{padding:5px;margin-bottom:10px;width:100%;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{border:1px solid #ccc;padding:8px;text-align:center;}
+button{cursor:pointer;}
+.overdue{background:#fdd;}
+.row{display:flex;gap:10px;flex-wrap:wrap;}
+.row>div{flex:1;min-width:150px;}
+.med-history{margin-bottom:5px;padding:5px;background:#eef;border-radius:5px;}
+.filter-section{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
 .filter-section>div{flex:1;}
 </style>
 </head>
@@ -25,7 +25,7 @@ button { cursor:pointer; }
 <h1 id="farmTitle">Farm Name</h1>
 <p id="farmInfo">Address | Phone</p>
 
-<h2>Set Farm Info</h2>
+<h2>Farm Info</h2>
 <div class="row">
 <div><input type="text" id="farmName" placeholder="Farm Name"></div>
 <div><input type="text" id="farmAddress" placeholder="Address"></div>
@@ -36,33 +36,34 @@ button { cursor:pointer; }
 <h2>Add / Edit Animal</h2>
 <div>
 <input type="hidden" id="animalId">
-<label>Tag Number (required, max 4):</label>
-<input type="text" id="tagNumber" maxlength="4" placeholder="Tag Number" required>
-<label>Tattoo Number (optional, max 4):</label>
+<label>Tag Number (required, max 4)</label>
+<input type="text" id="tagNumber" maxlength="4" placeholder="Tag Number">
+
+<label>Tattoo Number (optional, max 4)</label>
 <input type="text" id="tattooNumber" maxlength="4" placeholder="Tattoo Number">
 
-<label>Breed:</label>
-<div class="row"><div><select id="animalBreed"></select></div><div><button onclick="manageDropdown('breed')">Edit Options</button></div></div>
+<label>Breed</label>
+<div class="row">
+  <div><select id="animalBreed"></select></div>
+  <div><button onclick="manageDropdown('breed')">Edit Breed Options</button></div>
+</div>
 
-<label>Type:</label>
-<select id="animalType">
-<option value="Cow">Cow</option>
-<option value="Bull">Bull</option>
-</select>
+<label>Type</label>
+<select id="animalType"><option value="Cow">Cow</option><option value="Bull">Bull</option></select>
 
-<label>Age:</label><input type="number" id="animalAge" placeholder="Age (years)">
-<label>Location / Property:</label><input type="text" id="animalLocation" placeholder="Pasture / Property Name">
+<label>Age</label><input type="number" id="animalAge" placeholder="Age (years)">
+<label>Location / Property</label><input type="text" id="animalLocation">
 
 <h3>Parentage</h3>
-<label>Maternal Parent Name:</label><input type="text" id="maternalParent">
-<label>Paternal Parent Name:</label><input type="text" id="paternalParent">
+<label>Maternal Parent</label><input type="text" id="maternalParent">
+<label>Paternal Parent</label><input type="text" id="paternalParent">
 
-<h3>Udder & Temperament Scores</h3>
+<h3>Scores</h3>
 <div class="row">
-<div><label>Udder Suspension:</label><select id="udderSuspension"></select></div>
-<div><label>Udder Size:</label><select id="udderSize"></select></div>
-<div><label>Calving Ease:</label><select id="calvingEase"></select></div>
-<div><label>Docility:</label><select id="docility"></select></div>
+<div><label>Udder Suspension</label><select id="udderSuspension"></select></div>
+<div><label>Udder Size</label><select id="udderSize"></select></div>
+<div><label>Calving Ease</label><select id="calvingEase"></select></div>
+<div><label>Docility</label><select id="docility"></select></div>
 </div>
 <div class="row">
 <div><button onclick="manageDropdown('udderSuspension')">Edit Suspension</button></div>
@@ -73,191 +74,235 @@ button { cursor:pointer; }
 
 <h3>Medication / Vaccination History</h3>
 <div id="medHistoryContainer"></div>
-<label>Date Administered:</label><input type="date" id="medDate">
-<label>Medication Type:</label><input type="text" id="medType">
-<label>Quantity:</label><input type="text" id="medQuantity">
-<label>Next Due Date:</label><input type="date" id="medNextDue">
+<label>Date Administered</label><input type="date" id="medDate">
+<label>Medication Type</label><input type="text" id="medType">
+<label>Quantity</label><input type="text" id="medQuantity">
+<label>Next Due Date</label><input type="date" id="medNextDue">
 <button onclick="addMedHistory()">Add Med Record</button>
 
 <button onclick="saveAnimal()">Save Animal</button>
 </div>
 
-<h2>Search / Filter</h2>
+<h2>Filter / Search</h2>
 <div class="filter-section">
-<div><input type="text" id="filterTag" placeholder="Filter by Tag" oninput="applyFilter()"></div>
-<div><select id="filterBreed" onchange="applyFilter()"><option value="">All Breeds</option></select></div>
+<div><input type="text" id="filterTag" placeholder="Filter by Tag" oninput="loadAnimals()"></div>
+<div><select id="filterBreed"><option value="">All Breeds</option></select></div>
 <div><button onclick="showOverdue()">Overdue Medications</button></div>
 </div>
 
 <h2>Animals List</h2>
 <table id="animalTable">
-<thead>
-<tr>
+<thead><tr>
 <th>Tag</th><th>Tattoo</th><th>Breed</th><th>Type</th><th>Age</th><th>Location</th>
 <th>Parentage</th><th>Scores</th><th>Medications</th><th>Actions</th>
-</tr>
-</thead>
+</tr></thead>
 <tbody></tbody>
 </table>
 
 <h2>Database Actions</h2>
-<button onclick="exportData()">Export Data</button>
+<button onclick="exportData()">Export</button>
 <input type="file" id="importFile" onchange="importData(event)">
 
 <script>
-// ---------- Dropdown Defaults ----------
+// Default dropdown options
 const defaultOptions = {
-breed:['Gelbvieh','Balancer'],
-udderSuspension:['1','2','3','4','5','6','7','8','9'],
-udderSize:['1','2','3','4','5','6','7','8','9'],
-calvingEase:['1','2','3','4','5'],
-docility:['1','2','3','4','5']
+  breed: ['Gelbvieh','Balancer'],
+  udderSuspension: ['1','2','3','4','5','6','7','8','9'],
+  udderSize: ['1','2','3','4','5','6','7','8','9'],
+  calvingEase: ['1','2','3','4','5'],
+  docility: ['1','2','3','4','5']
 };
 
 function loadDropdownOptions(field){
-    let options = JSON.parse(localStorage.getItem('options_'+field) || 'null');
-    if(!options){ options = defaultOptions[field]; localStorage.setItem('options_'+field,JSON.stringify(options)); }
-    const selects = [document.getElementById(field)];
-    if(field==='breed'){ selects.push(document.getElementById('filterBreed')); }
-    selects.forEach(sel=>{
-        sel.innerHTML='';
-        options.forEach(o=>{const opt=document.createElement('option'); opt.value=o; opt.innerText=o; sel.appendChild(opt);});
-        if(field==='breed') sel.insertAdjacentHTML('afterbegin','<option value="">All Breeds</option>');
-    });
+  let options = JSON.parse(localStorage.getItem('options_'+field) || 'null');
+  if(!options){ options=defaultOptions[field]; localStorage.setItem('options_'+field,JSON.stringify(options)); }
+  const sel = document.getElementById(field);
+  sel.innerHTML='';
+  options.forEach(o=>{const opt=document.createElement('option'); opt.value=o; opt.innerText=o; sel.appendChild(opt);});
+  if(field==='breed'){
+    const filter=document.getElementById('filterBreed');
+    filter.innerHTML='<option value="">All Breeds</option>';
+    options.forEach(o=>{const opt=document.createElement('option'); opt.value=o; opt.innerText=o; filter.appendChild(opt);});
+  }
 }
+['breed','udderSuspension','udderSize','calvingEase','docility'].forEach(loadDropdownOptions);
+
 function manageDropdown(field){
-    let options = JSON.parse(localStorage.getItem('options_'+field));
-    let newVal = prompt('Current options: '+options.join(', ')+'\nAdd/Remove (comma separated):',options.join(','));
-    if(newVal!==null){
-        let arr = newVal.split(',').map(s=>s.trim()).filter(s=>s); 
-        localStorage.setItem('options_'+field,JSON.stringify(arr));
-        loadDropdownOptions(field);
-    }
+  let options = JSON.parse(localStorage.getItem('options_'+field));
+  let newVal = prompt('Current options: '+options.join(',')+'\nAdd/Remove (comma separated)', options.join(','));
+  if(newVal!==null){
+    options = newVal.split(',').map(s=>s.trim()).filter(s=>s);
+    localStorage.setItem('options_'+field, JSON.stringify(options));
+    loadDropdownOptions(field);
+  }
 }
-['breed','udderSuspension','udderSize','calvingEase','docility'].forEach(f=>loadDropdownOptions(f));
 
-// ---------- Farm Info ----------
-function saveFarmInfo(){ const farm={name:document.getElementById('farmName').value,address:document.getElementById('farmAddress').value,phone:document.getElementById('farmPhone').value}; localStorage.setItem('farmInfo',JSON.stringify(farm)); loadFarmInfo();}
-function loadFarmInfo(){ const farm=JSON.parse(localStorage.getItem('farmInfo')||'{}'); document.getElementById('farmTitle').innerText=farm.name||'Farm Name'; document.getElementById('farmInfo').innerText=farm.address&&farm.phone?`${farm.address} | ${farm.phone}`:''; document.getElementById('farmName').value=farm.name||''; document.getElementById('farmAddress').value=farm.address||''; document.getElementById('farmPhone').value=farm.phone||'';}
+// Farm info
+function saveFarmInfo(){ 
+  const farm={name:document.getElementById('farmName').value,address:document.getElementById('farmAddress').value,phone:document.getElementById('farmPhone').value};
+  localStorage.setItem('farmInfo',JSON.stringify(farm)); loadFarmInfo();
+}
+function loadFarmInfo(){
+  const farm=JSON.parse(localStorage.getItem('farmInfo')||'{}');
+  document.getElementById('farmTitle').innerText=farm.name||'Farm Name';
+  document.getElementById('farmInfo').innerText=farm.address&&farm.phone?`${farm.address} | ${farm.phone}`:'';
+  document.getElementById('farmName').value=farm.name||'';
+  document.getElementById('farmAddress').value=farm.address||'';
+  document.getElementById('farmPhone').value=farm.phone||'';
+}
 
-// ---------- Animal Management ----------
+// Animal functions
 function getAnimals(){return JSON.parse(localStorage.getItem('animals')||'[]');}
 function saveAnimal(){
-    const id=document.getElementById('animalId').value;
-    const tag=document.getElementById('tagNumber').value.trim(); if(!tag){alert('Tag required'); return;} if(tag.length>4){alert('Max 4 chars');return;}
-    const tattoo=document.getElementById('tattooNumber').value.trim(); if(tattoo.length>4){alert('Max 4 chars');return;}
-    const animalData={id:id||Date.now().toString(),tag,tattoo,
-        breed:document.getElementById('animalBreed').value,
-        type:document.getElementById('animalType').value,
-        age:document.getElementById('animalAge').value,
-        location:document.getElementById('animalLocation').value,
-        maternalParent:document.getElementById('maternalParent').value,
-        paternalParent:document.getElementById('paternalParent').value,
-        udderSuspension:document.getElementById('udderSuspension').value,
-        udderSize:document.getElementById('udderSize').value,
-        calvingEase:document.getElementById('calvingEase').value,
-        docility:document.getElementById('docility').value,
-        medHistory:JSON.parse(localStorage.getItem('tempMedHistory')||'[]')
-    };
-    let animals=getAnimals().filter(a=>a.id!==animalData.id);
-    animals.push(animalData);
-    localStorage.setItem('animals',JSON.stringify(animals));
-    localStorage.removeItem('tempMedHistory');
-    clearForm();
-    loadAnimals();
+  const tag=document.getElementById('tagNumber').value.trim();
+  if(!tag){alert('Tag required'); return;}
+  if(tag.length>4){alert('Max 4 chars'); return;}
+  const animal={id:document.getElementById('animalId').value||Date.now().toString(),
+    tag, tattoo:document.getElementById('tattooNumber').value.trim(),
+    breed:document.getElementById('animalBreed').value,
+    type:document.getElementById('animalType').value,
+    age:document.getElementById('animalAge').value,
+    location:document.getElementById('animalLocation').value,
+    maternalParent:document.getElementById('maternalParent').value,
+    paternalParent:document.getElementById('paternalParent').value,
+    udderSuspension:document.getElementById('udderSuspension').value,
+    udderSize:document.getElementById('udderSize').value,
+    calvingEase:document.getElementById('calvingEase').value,
+    docility:document.getElementById('docility').value,
+    medHistory:JSON.parse(localStorage.getItem('tempMedHistory')||'[]')
+  };
+  let animals=getAnimals().filter(a=>a.id!==animal.id);
+  animals.push(animal);
+  localStorage.setItem('animals',JSON.stringify(animals));
+  localStorage.removeItem('tempMedHistory');
+  clearForm(); loadAnimals();
 }
 function editAnimal(id){
-    const a=getAnimals().find(a=>a.id===id); if(!a) return;
-    document.getElementById('animalId').value=a.id; document.getElementById('tagNumber').value=a.tag; document.getElementById('tattooNumber').value=a.tattoo||'';
-    document.getElementById('animalBreed').value=a.breed; document.getElementById('animalType').value=a.type; document.getElementById('animalAge').value=a.age; document.getElementById('animalLocation').value=a.location;
-    document.getElementById('maternalParent').value=a.maternalParent; document.getElementById('paternalParent').value=a.paternalParent;
-    document.getElementById('udderSuspension').value=a.udderSuspension; document.getElementById('udderSize').value=a.udderSize;
-    document.getElementById('calvingEase').value=a.calvingEase; document.getElementById('docility').value=a.docility;
-    localStorage.setItem('tempMedHistory',JSON.stringify(a.medHistory||[])); displayMedHistory();
+  const a=getAnimals().find(x=>x.id===id); if(!a) return;
+  document.getElementById('animalId').value=a.id;
+  document.getElementById('tagNumber').value=a.tag;
+  document.getElementById('tattooNumber').value=a.tattoo||'';
+  document.getElementById('animalBreed').value=a.breed;
+  document.getElementById('animalType').value=a.type;
+  document.getElementById('animalAge').value=a.age;
+  document.getElementById('animalLocation').value=a.location;
+  document.getElementById('maternalParent').value=a.maternalParent;
+  document.getElementById('paternalParent').value=a.paternalParent;
+  document.getElementById('udderSuspension').value=a.udderSuspension;
+  document.getElementById('udderSize').value=a.udderSize;
+  document.getElementById('calvingEase').value=a.calvingEase;
+  document.getElementById('docility').value=a.docility;
+  localStorage.setItem('tempMedHistory',JSON.stringify(a.medHistory||[]));
+  displayMedHistory();
 }
 function deleteAnimal(id){localStorage.setItem('animals',JSON.stringify(getAnimals().filter(a=>a.id!==id))); loadAnimals();}
-function clearForm(){document.getElementById('animalId').value='';document.getElementById('tagNumber').value='';document.getElementById('tattooNumber').value='';document.getElementById('animalAge').value='';document.getElementById('animalLocation').value='';document.getElementById('maternalParent').value='';document.getElementById('paternalParent').value='';document.getElementById('udderSuspension').value='';document.getElementById('udderSize').value='';document.getElementById('calvingEase').value='';document.getElementById('docility').value='';localStorage.removeItem('tempMedHistory'); displayMedHistory();}
-
-// ---------- Medication History ----------
-function addMedHistory(){ const date=document.getElementById('medDate').value; const type=document.getElementById('medType').value; const qty=document.getElementById('medQuantity').value; const next=document.getElementById('medNextDue').value; if(!date||!type){alert('Date and Type required'); return;} let medHistory=JSON.parse(localStorage.getItem('tempMedHistory')||'[]'); medHistory.push({date,type,quantity:qty,nextDue:next}); localStorage.setItem('tempMedHistory',JSON.stringify(medHistory)); displayMedHistory();}
-function displayMedHistory(){ const container=document.getElementById('medHistoryContainer'); const medHistory=JSON.parse(localStorage.getItem('tempMedHistory')||'[]'); container.innerHTML=''; medHistory.forEach(m=>{const overdue=m.nextDue&&new Date(m.nextDue)<new Date()?'overdue':''; const div=document.createElement('div'); div.className=`med-history ${overdue}`; div.innerText=`${m.date} | ${m.type} | Qty: ${m.quantity||'-'} | Next Due: ${m.nextDue||'-'}`; container.appendChild(div);});}
-
-// ---------- Load Animals ----------
-function loadAnimals(){ 
-    const tbody=document.getElementById('animalTable').querySelector('tbody'); tbody.innerHTML='';
-    let animals=getAnimals();
-    // Apply filter
-    const fTag=document.getElementById('filterTag').value.trim().toLowerCase();
-    const fBreed=document.getElementById('filterBreed').value;
-    if(fTag) animals=animals.filter(a=>a.tag.toLowerCase().includes(fTag));
-    if(fBreed) animals=animals.filter(a=>a.breed===fBreed);
-    animals.forEach(a=>{
-        const medText=a.medHistory.map(m=>`${m.type} (Next:${m.nextDue||'-'})`).join('; ');
-        const parentText=`M:${a.maternalParent||'-'}/P:${a.paternalParent||'-'}`;
-        const scores=`Susp:${a.udderSuspension||'-'} Size:${a.udderSize||'-'} CE:${a.calvingEase||'-'} Doc:${a.docility||'-'}`;
-        const row=document.createElement('tr');
-        row.innerHTML=`<td>${a.tag}</td><td>${a.tattoo||'-'}</td><td>${a.breed}</td><td>${a.type}</td><td>${a.age||'-'}</td><td>${a.location||'-'}</td><td>${parentText}</td><td>${scores}</td><td>${medText}</td><td><button onclick="editAnimal('${a.id}')">Edit</button><button onclick="deleteAnimal('${a.id}')">Delete</button></td>`;
-        tbody.appendChild(row);
-    });
-}
-function applyFilter(){ loadAnimals(); }
-
-// ---------- Export / Import ----------
-function exportData(){
-    const data={ farm:JSON.parse(localStorage.getItem('farmInfo')||'{}'), animals:getAnimals()};
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=url; a.download='farm_database.json'; a.click();
+function clearForm(){
+  document.getElementById('animalId').value='';
+  document.getElementById('tagNumber').value='';
+  document.getElementById('tattooNumber').value='';
+  document.getElementById('animalAge').value='';
+  document.getElementById('animalLocation').value='';
+  document.getElementById('maternalParent').value='';
+  document.getElementById('paternalParent').value='';
+  document.getElementById('udderSuspension').value='';
+  document.getElementById('udderSize').value='';
+  document.getElementById('calvingEase').value='';
+  document.getElementById('docility').value='';
+  localStorage.removeItem('tempMedHistory');
+  displayMedHistory();
 }
 
-// ---------- Import & Merge ----------
-function importData(event){
-    const file = event.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = e=>{
-        try{
-            const importedData = JSON.parse(e.target.result);
-            if(!importedData.animals) importedData.animals=[];
-
-            // --- Compare farm info ---
-            const currentFarm = JSON.parse(localStorage.getItem('farmInfo') || '{}');
-            if(JSON.stringify(currentFarm)!==JSON.stringify(importedData.farm||{})){
-                if(confirm(`Imported farm info differs:\nCurrent: ${JSON.stringify(currentFarm)}\nImported: ${JSON.stringify(importedData.farm)}\nUpdate farm info?`)){
-                    localStorage.setItem('farmInfo',JSON.stringify(importedData.farm));
-                    loadFarmInfo();
-                }
-            }
-
-            // --- Compare animals ---
-            let animals=getAnimals();
-            importedData.animals.forEach(imported=>{
-                const existingIndex = animals.findIndex(a=>a.tag===imported.tag);
-                if(existingIndex>-1){
-                    const existing=animals[existingIndex];
-                    const update=confirm(`Animal with Tag "${imported.tag}" exists.\n\nExisting:\n${JSON.stringify(existing,null,2)}\n\nImported:\n${JSON.stringify(imported,null,2)}\nUpdate existing with imported data?`);
-                    if(update) animals[existingIndex]=imported;
-                } else {
-                    animals.push(imported);
-                }
-            });
-            localStorage.setItem('animals',JSON.stringify(animals));
-            loadAnimals();
-            alert('Import complete!');
-        }catch(err){ alert('Error reading file: '+err);}
-    };
-    reader.readAsText(file);
+// Med history
+function addMedHistory(){
+  const date=document.getElementById('medDate').value;
+  const type=document.getElementById('medType').value;
+  if(!date||!type){alert('Date and Type required'); return;}
+  const qty=document.getElementById('medQuantity').value;
+  const next=document.getElementById('medNextDue').value;
+  let medHistory=JSON.parse(localStorage.getItem('tempMedHistory')||'[]');
+  medHistory.push({date,type,quantity:qty,nextDue:next});
+  localStorage.setItem('tempMedHistory',JSON.stringify(medHistory));
+  displayMedHistory();
+}
+function displayMedHistory(){
+  const container=document.getElementById('medHistoryContainer');
+  const medHistory=JSON.parse(localStorage.getItem('tempMedHistory')||'[]');
+  container.innerHTML='';
+  medHistory.forEach(m=>{
+    const div=document.createElement('div');
+    const overdue=m.nextDue&&new Date(m.nextDue)<new Date()?'overdue':'';
+    div.className='med-history '+overdue;
+    div.innerText=`${m.date} | ${m.type} | Qty: ${m.quantity||'-'} | Next Due: ${m.nextDue||'-'}`;
+    container.appendChild(div);
+  });
 }
 
-// ---------- Overdue Medications ----------
+// Load animals
+function loadAnimals(){
+  const tbody=document.querySelector('#animalTable tbody'); tbody.innerHTML='';
+  let animals=getAnimals();
+  const fTag=document.getElementById('filterTag').value.trim().toLowerCase();
+  const fBreed=document.getElementById('filterBreed').value;
+  if(fTag) animals=animals.filter(a=>a.tag.toLowerCase().includes(fTag));
+  if(fBreed) animals=animals.filter(a=>a.breed===fBreed);
+  animals.forEach(a=>{
+    const meds=a.medHistory.map(m=>`${m.type}(Next:${m.nextDue||'-'})`).join('; ');
+    const parent=`M:${a.maternalParent||'-'}/P:${a.paternalParent||'-'}`;
+    const scores=`Susp:${a.udderSuspension||'-'} Size:${a.udderSize||'-'} CE:${a.calvingEase||'-'} Doc:${a.docility||'-'}`;
+    const row=document.createElement('tr');
+    row.innerHTML=`<td>${a.tag}</td><td>${a.tattoo||'-'}</td><td>${a.breed}</td><td>${a.type}</td><td>${a.age||'-'}</td><td>${a.location||'-'}</td><td>${parent}</td><td>${scores}</td><td>${meds}</td><td><button onclick="editAnimal('${a.id}')">Edit</button> <button onclick="deleteAnimal('${a.id}')">Delete</button></td>`;
+    tbody.appendChild(row);
+  });
+}
+
+// Filter triggers
+document.getElementById('filterBreed').addEventListener('change',loadAnimals);
+
+// Overdue
 function showOverdue(){
-    const today = new Date();
-    const overdueAnimals = getAnimals().filter(a=>a.medHistory.some(m=>m.nextDue&&new Date(m.nextDue)<today));
-    if(!overdueAnimals.length){ alert('No overdue medications'); return; }
-    alert('Overdue Medications:\n' + overdueAnimals.map(a=>`Tag: ${a.tag}, Meds: ${a.medHistory.filter(m=>m.nextDue&&new Date(m.nextDue)<today).map(m=>m.type).join(', ')}`).join('\n'));
+  const today=new Date();
+  const overdue=getAnimals().filter(a=>a.medHistory.some(m=>m.nextDue&&new Date(m.nextDue)<today));
+  if(!overdue.length){alert('No overdue medications'); return;}
+  alert('Overdue:\n'+overdue.map(a=>`Tag: ${a.tag}, Meds: ${a.medHistory.filter(m=>m.nextDue&&new Date(m.nextDue)<today).map(m=>m.type).join(', ')}`).join('\n'));
 }
 
-// ---------- Init ----------
+// Export
+function exportData(){
+  const data={farm:JSON.parse(localStorage.getItem('farmInfo')||'{}'),animals:getAnimals()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='farm_database.json'; a.click();
+}
+
+// Import with compare
+function importData(event){
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const imported=JSON.parse(e.target.result);
+      if(!imported.animals) imported.animals=[];
+      const currentFarm=JSON.parse(localStorage.getItem('farmInfo')||'{}');
+      if(JSON.stringify(currentFarm)!==JSON.stringify(imported.farm||{})){
+        if(confirm(`Farm info differs, update?`)) { localStorage.setItem('farmInfo',JSON.stringify(imported.farm)); loadFarmInfo(); }
+      }
+      let animals=getAnimals();
+      imported.animals.forEach(i=>{
+        const idx=animals.findIndex(a=>a.tag===i.tag);
+        if(idx>-1){
+          const update=confirm(`Animal tag ${i.tag} exists.\nUpdate with imported data?`);
+          if(update) animals[idx]=i;
+        } else animals.push(i);
+      });
+      localStorage.setItem('animals',JSON.stringify(animals));
+      loadAnimals();
+      alert('Import complete!');
+    }catch(err){alert('Error: '+err);}
+  };
+  reader.readAsText(file);
+}
+
+// Init
 loadFarmInfo(); loadAnimals(); displayMedHistory();
 </script>
 </body>
