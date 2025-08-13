@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>MOOgle - Your Farm Animal Tracker</title>
+<title>Farm Animal Tracker</title>
 <style>
   body { font-family: Arial, sans-serif; margin: 20px; }
   table, th, td { border: 1px solid #ccc; border-collapse: collapse; padding: 5px; }
@@ -12,18 +12,10 @@
 </style>
 </head>
 <body>
-  
-<h1 style="text-align: left;">MOOgle</h1>
-
-<h2 style="text-align: left;">Your Farm Animal Tracker</h2><br>
 
 <h1 id="farmName">My Farm</h1>
 <p id="farmContact">Address / Phone</p>
 <button onclick="editFarmInfo()">Edit Farm Info</button>
-
-<h2>Overdue Medications</h2>
-<table id="overdueMedsTable"></table>
-<button onclick="loadOverdueMeds()">Refresh Overdue List</button>
 
 <h2>Search Animal</h2>
 Tag #: <input id="searchTag" maxlength="4" placeholder="Tag #">
@@ -85,6 +77,10 @@ Tattoo #: <input id="searchTattoo" maxlength="4" placeholder="Tattoo #">
 <h2>Animals List</h2>
 <table id="animalsTable"></table>
 
+<h2>Overdue Medications</h2>
+<table id="overdueMedsTable"></table>
+<button onclick="loadOverdueMeds()">Refresh Overdue List</button>
+
 <h2>Import / Export</h2>
 <input type="file" id="importFile">
 <button onclick="importData()">Import</button>
@@ -96,7 +92,7 @@ let medEditIndex = null;
 
 // --- Initialization ---
 window.addEventListener('DOMContentLoaded', function() {
-    // Explicit mapping of select IDs to localStorage keys
+    // Dropdown mapping
     const dropdownMap = {
         animalBreed: 'breedOptions',
         udderSuspension: 'udderSuspensionOptions',
@@ -134,13 +130,9 @@ window.addEventListener('DOMContentLoaded', function() {
     // Animals array
     if(!localStorage.getItem('animals')) localStorage.setItem('animals','[]');
 
-    // Load table
+    // Load tables
     loadAnimals();
     loadOverdueMeds();
-
-    // Load first animal if exists
-    const animals = JSON.parse(localStorage.getItem('animals'));
-    if(animals.length>0) editAnimal(0);
 });
 
 // --- Dropdown editor ---
@@ -220,6 +212,7 @@ function deleteAnimal(index){
         animals.splice(index,1);
         localStorage.setItem('animals', JSON.stringify(animals));
         loadAnimals();
+        loadOverdueMeds();
         if(editIndex===index){
             editIndex = medEditIndex = null;
             document.getElementById('animalForm').reset();
@@ -267,6 +260,7 @@ function addMedication(){
     }
     localStorage.setItem('animals', JSON.stringify(animals));
     loadMedicationTable(animals[editIndex].medications);
+    loadOverdueMeds();
     document.getElementById('medDate').value='';
     document.getElementById('medType').value='';
     document.getElementById('medQuantity').value='';
@@ -290,6 +284,7 @@ function deleteMedication(i){
         animals[editIndex].medications.splice(i,1);
         localStorage.setItem('animals', JSON.stringify(animals));
         loadMedicationTable(animals[editIndex].medications);
+        loadOverdueMeds();
     }
 }
 
@@ -308,7 +303,7 @@ function saveAnimal(){
         udderSize: document.getElementById('udderSize').value,
         calvingEase: document.getElementById('calvingEase').value,
         docility: document.getElementById('docility').value,
-        medications: editIndex!==null ? animals[editIndex].medications : []
+        medications: editIndex!==null ? getAnimals()[editIndex].medications : []
     };
     if(editIndex!==null){
         animals[editIndex] = animal;
@@ -318,6 +313,7 @@ function saveAnimal(){
     }
     localStorage.setItem('animals', JSON.stringify(animals));
     loadAnimals();
+    loadOverdueMeds();
     document.getElementById('animalForm').reset();
     document.getElementById('medicationsTable').innerHTML='';
 }
@@ -355,6 +351,7 @@ function searchByTattoo(){
     }
 }
 
+// --- Overdue Medications ---
 function loadOverdueMeds(){
     const animals = getAnimals();
     const table = document.getElementById('overdueMedsTable');
@@ -383,28 +380,65 @@ function loadOverdueMeds(){
     });
 }
 
-// --- Import/Export ---
+// --- Import / Export ---
 function exportData(){
     const blob = new Blob([localStorage.getItem('animals') || '[]'], {type:'application/json'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='animals.json'; a.click();
 }
 
-function importData(){
+function importData() {
     const file = document.getElementById('importFile').files[0];
     if(!file) return;
     const reader = new FileReader();
-    reader.onload = e=>{
+
+    reader.onload = e => {
         const imported = JSON.parse(e.target.result);
-        const animals = getAnimals();
-        imported.forEach(newA=>{
-            const idx = animals.findIndex(a=>a.tag===newA.tag && a.tattoo===newA.tattoo);
-            if(idx>=0){
-                if(confirm(`Update existing animal ${newA.tag}?`)) animals[idx]=newA;
-            } else animals.push(newA);
+        let animals = getAnimals();
+        let mismatches = [];
+        let newRecords = [];
+
+        imported.forEach(newA => {
+            const idx = animals.findIndex(a => a.tag === newA.tag && a.tattoo === newA.tattoo);
+            if(idx === -1){
+                newRecords.push(newA);
+            } else {
+                const existing = animals[idx];
+                if(JSON.stringify(existing) !== JSON.stringify(newA)){
+                    mismatches.push({index: idx, existing, incoming: newA});
+                }
+            }
         });
+
+        // Add new records silently
+        if(newRecords.length > 0){
+            animals = animals.concat(newRecords);
+        }
+
+        // Handle mismatches with prompts
+        if(mismatches.length > 0){
+            let acceptAll=false, denyAll=false;
+            for(const m of mismatches){
+                if(acceptAll) { animals[m.index]=m.incoming; continue; }
+                if(denyAll) continue;
+
+                const diff=[];
+                for(const key in m.incoming){
+                    if(JSON.stringify(m.incoming[key])!==JSON.stringify(m.existing[key])){
+                        diff.push(`${key}: existing=${JSON.stringify(m.existing[key])} -> incoming=${JSON.stringify(m.incoming[key])}`);
+                    }
+                }
+                const msg=`Animal Tag: ${m.existing.tag}, Tattoo: ${m.existing.tattoo}\nDifferences:\n${diff.join('\n')}\n\nPress OK to accept, Cancel to deny.`;
+                const response=confirm(msg);
+                if(response) animals[m.index]=m.incoming;
+            }
+        }
+
         localStorage.setItem('animals', JSON.stringify(animals));
         loadAnimals();
+        loadOverdueMeds();
+        alert(`Import complete. ${newRecords.length} new records added, ${mismatches.length} mismatched records prompted.`);
     };
+
     reader.readAsText(file);
 }
 </script>
