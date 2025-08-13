@@ -17,7 +17,7 @@
 <p id="farmContact">Address / Phone</p>
 <button onclick="editFarmInfo()">Edit Farm Info</button>
 
-<h2>Add / Edit Animal</h2>
+<h2>1 Add / Edit Animal</h2>
 <form id="animalForm" onsubmit="saveAnimal(); return false;">
   Tag #: <input id="tag" maxlength="4" required>
   Tattoo #: <input id="tattoo" maxlength="4"><br><br>
@@ -117,8 +117,14 @@ function editDropdown(key, selectId){
 function editFarmInfo(){
   const name = prompt("Farm Name:", document.getElementById('farmName').textContent);
   const contact = prompt("Address / Phone:", document.getElementById('farmContact').textContent);
-  if(name) document.getElementById('farmName').textContent = name;
-  if(contact) document.getElementById('farmContact').textContent = contact;
+  if(name){
+    document.getElementById('farmName').textContent = name;
+    localStorage.setItem('farmName', name);
+  }
+  if(contact){
+    document.getElementById('farmContact').textContent = contact;
+    localStorage.setItem('farmContact', contact);
+  }
 }
 
 // Animal storage
@@ -305,18 +311,6 @@ function importData(){
   };
   reader.readAsText(file);
 }
-
-// Initialize
-initDropdowns();
-loadAnimals();
-
-// Ensure data is loaded on page load
-window.addEventListener('load', () => {
-  const animals = getAnimals();
-  if (animals.length > 0) {
-    editAnimal(0); // populate first animal form and medications
-  }
-});
 </script>
 </body>
 </html>
