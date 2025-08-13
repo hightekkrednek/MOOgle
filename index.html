@@ -26,6 +26,7 @@ Tattoo #: <input id="searchTattoo" maxlength="4" placeholder="Tattoo #">
 
 <h2>Add / Edit Animal</h2>
 <button type="button" onclick="newRecord()">New Record</button><br><br>
+
 <form id="animalForm" onsubmit="saveAnimal(); return false;">
   Tag #: <input id="tag" maxlength="4" required>
   Tattoo #: <input id="tattoo" maxlength="4"><br><br>
@@ -87,8 +88,16 @@ let medEditIndex = null;
 
 // --- Initialization ---
 window.addEventListener('DOMContentLoaded', function() {
-    // Dropdown defaults
-    const dropdownDefaults = {
+    // Explicit mapping of select IDs to localStorage keys
+    const dropdownMap = {
+        animalBreed: 'breedOptions',
+        udderSuspension: 'udderSuspensionOptions',
+        udderSize: 'udderSizeOptions',
+        calvingEase: 'calvingEaseOptions',
+        docility: 'docilityOptions'
+    };
+
+    const defaults = {
         breedOptions: ['Gelbvieh','Balancer'],
         udderSuspensionOptions: ['1','2','3','4','5','6','7','8','9'],
         udderSizeOptions: ['1','2','3','4','5','6','7','8','9'],
@@ -96,17 +105,16 @@ window.addEventListener('DOMContentLoaded', function() {
         docilityOptions: ['1','2','3','4','5']
     };
 
-    for(const key in dropdownDefaults){
-        if(!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(dropdownDefaults[key]));
-        const select = document.getElementById(key.replace('Options',''));
-        if(select){
-            select.innerHTML = '';
-            JSON.parse(localStorage.getItem(key)).forEach(opt=>{
-                const o = document.createElement('option');
-                o.value = o.textContent = opt;
-                select.appendChild(o);
-            });
-        }
+    for(const selectId in dropdownMap){
+        const key = dropdownMap[selectId];
+        if(!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(defaults[key]));
+        const select = document.getElementById(selectId);
+        select.innerHTML = '';
+        JSON.parse(localStorage.getItem(key)).forEach(opt=>{
+            const o = document.createElement('option');
+            o.value = o.textContent = opt;
+            select.appendChild(o);
+        });
     }
 
     // Farm info
@@ -305,6 +313,14 @@ function saveAnimal(){
     document.getElementById('medicationsTable').innerHTML='';
 }
 
+// --- New Record ---
+function newRecord(){
+    editIndex = null;
+    medEditIndex = null;
+    document.getElementById('animalForm').reset();
+    document.getElementById('medicationsTable').innerHTML='';
+}
+
 // --- Search ---
 function searchByTag(){
     const tag = document.getElementById('searchTag').value.trim();
@@ -328,13 +344,6 @@ function searchByTattoo(){
     } else {
         alert("Tattoo not found");
     }
-}
- // called when the new record button is pressed
-function newRecord(){
-    editIndex = null;       // clear editing index
-    medEditIndex = null;    // clear any medication editing
-    document.getElementById('animalForm').reset(); // clear form fields
-    document.getElementById('medicationsTable').innerHTML=''; // clear meds table
 }
 
 // --- Import/Export ---
