@@ -61,6 +61,11 @@ Tattoo #: <input id="searchTattoo" maxlength="4" placeholder="Tattoo #">
   <select id="docility"></select>
   <button type="button" onclick="editDropdown('docilityOptions','docility')">Edit</button><br><br>
 
+  Date of Birth: <input type="date" id="dob" onchange="updateAge()">
+  <span id="ageDisplay"></span><br><br>
+
+  Date of Death: <input type="date" id="dod"><br><br>
+
   <h3>Medications</h3>
   Date: <input type="date" id="medDate">
   Type: <input id="medType">
@@ -92,7 +97,6 @@ let medEditIndex = null;
 
 // --- Initialization ---
 window.addEventListener('DOMContentLoaded', function() {
-    // Dropdown mapping
     const dropdownMap = {
         animalBreed: 'breedOptions',
         udderSuspension: 'udderSuspensionOptions',
@@ -121,16 +125,13 @@ window.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Farm info
     if(!localStorage.getItem('farmName')) localStorage.setItem('farmName','My Farm');
     if(!localStorage.getItem('farmContact')) localStorage.setItem('farmContact','Address / Phone');
     document.getElementById('farmName').textContent = localStorage.getItem('farmName');
     document.getElementById('farmContact').textContent = localStorage.getItem('farmContact');
 
-    // Animals array
     if(!localStorage.getItem('animals')) localStorage.setItem('animals','[]');
 
-    // Load tables
     loadAnimals();
     loadOverdueMeds();
 });
@@ -166,6 +167,20 @@ function editFarmInfo(){
   }
 }
 
+// --- Age calculation ---
+function updateAge(){
+    const dob = document.getElementById('dob').value;
+    if(!dob) { document.getElementById('ageDisplay').textContent=''; return; }
+    const birth = new Date(dob);
+    const now = new Date();
+    let years = now.getFullYear() - birth.getFullYear();
+    let months = now.getMonth() - birth.getMonth();
+    let days = now.getDate() - birth.getDate();
+    if(days < 0){ months--; days += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
+    if(months < 0){ years--; months += 12; }
+    document.getElementById('ageDisplay').textContent = `Age: ${years}y ${months}m ${days}d`;
+}
+
 // --- Animals ---
 function getAnimals(){ return JSON.parse(localStorage.getItem('animals') || '[]'); }
 
@@ -174,7 +189,7 @@ function loadAnimals(){
     const table = document.getElementById('animalsTable');
     table.innerHTML = `
       <tr>
-        <th>Tag</th><th>Tattoo</th><th>Breed</th><th>Type</th><th>Location</th><th>Actions</th>
+        <th>Tag</th><th>Tattoo</th><th>Breed</th><th>Type</th><th>Location</th><th>DOB</th><th>DOD</th><th>Actions</th>
       </tr>`;
     animals.forEach((a,i)=>{
         const row = table.insertRow();
@@ -183,11 +198,14 @@ function loadAnimals(){
         row.insertCell(2).innerText = a.breed;
         row.insertCell(3).innerText = a.type;
         row.insertCell(4).innerText = a.location;
-        row.insertCell(5).innerHTML = `<button onclick="editAnimal(${i})">Edit</button>
+        row.insertCell(5).innerText = a.dob || '';
+        row.insertCell(6).innerText = a.dod || '';
+        row.insertCell(7).innerHTML = `<button onclick="editAnimal(${i})">Edit</button>
                                        <button onclick="deleteAnimal(${i})">Delete</button>`;
     });
 }
 
+// --- Edit / Save / New Record ---
 function editAnimal(index){
     const animals = getAnimals();
     const a = animals[index];
@@ -203,92 +221,12 @@ function editAnimal(index){
     document.getElementById('udderSize').value = a.udderSize;
     document.getElementById('calvingEase').value = a.calvingEase;
     document.getElementById('docility').value = a.docility;
+    document.getElementById('dob').value = a.dob || '';
+    updateAge();
+    document.getElementById('dod').value = a.dod || '';
     loadMedicationTable(a.medications || []);
 }
 
-function deleteAnimal(index){
-    if(confirm("Delete this animal?")){
-        const animals = getAnimals();
-        animals.splice(index,1);
-        localStorage.setItem('animals', JSON.stringify(animals));
-        loadAnimals();
-        loadOverdueMeds();
-        if(editIndex===index){
-            editIndex = medEditIndex = null;
-            document.getElementById('animalForm').reset();
-            document.getElementById('medicationsTable').innerHTML='';
-        }
-    }
-}
-
-// --- Medications ---
-function loadMedicationTable(meds){
-    const table = document.getElementById('medicationsTable');
-    table.innerHTML = `
-      <tr>
-        <th>Date</th><th>Type</th><th>Qty</th><th>Next Due</th><th>Actions</th>
-      </tr>`;
-    meds.forEach((m,i)=>{
-        const row = table.insertRow();
-        row.insertCell(0).innerText = m.date;
-        row.insertCell(1).innerText = m.type;
-        row.insertCell(2).innerText = m.quantity;
-        row.insertCell(3).innerText = m.nextDue;
-        if(m.nextDue && m.nextDue < new Date().toISOString().split('T')[0]){
-            row.classList.add('overdue');
-        }
-        row.insertCell(4).innerHTML = `<button type="button" onclick="editMedication(${i})">Edit</button>
-                                        <button type="button" onclick="deleteMedication(${i})">Delete</button>`;
-    });
-}
-
-function addMedication(){
-    if(editIndex===null){ alert("Save animal first."); return; }
-    const animals = getAnimals();
-    if(!animals[editIndex].medications) animals[editIndex].medications=[];
-    const med = {
-        date: document.getElementById('medDate').value,
-        type: document.getElementById('medType').value,
-        quantity: document.getElementById('medQuantity').value,
-        nextDue: document.getElementById('medNextDue').value
-    };
-    if(medEditIndex!==null){
-        animals[editIndex].medications[medEditIndex] = med;
-        medEditIndex=null;
-    } else {
-        animals[editIndex].medications.push(med);
-    }
-    localStorage.setItem('animals', JSON.stringify(animals));
-    loadMedicationTable(animals[editIndex].medications);
-    loadOverdueMeds();
-    document.getElementById('medDate').value='';
-    document.getElementById('medType').value='';
-    document.getElementById('medQuantity').value='';
-    document.getElementById('medNextDue').value='';
-}
-
-function editMedication(i){
-    if(editIndex===null) return;
-    const animals = getAnimals();
-    const m = animals[editIndex].medications[i];
-    document.getElementById('medDate').value = m.date;
-    document.getElementById('medType').value = m.type;
-    document.getElementById('medQuantity').value = m.quantity;
-    document.getElementById('medNextDue').value = m.nextDue;
-    medEditIndex = i;
-}
-
-function deleteMedication(i){
-    if(confirm("Delete this medication?")){
-        const animals = getAnimals();
-        animals[editIndex].medications.splice(i,1);
-        localStorage.setItem('animals', JSON.stringify(animals));
-        loadMedicationTable(animals[editIndex].medications);
-        loadOverdueMeds();
-    }
-}
-
-// --- Save animal ---
 function saveAnimal(){
     const animals = getAnimals();
     const animal = {
@@ -303,94 +241,136 @@ function saveAnimal(){
         udderSize: document.getElementById('udderSize').value,
         calvingEase: document.getElementById('calvingEase').value,
         docility: document.getElementById('docility').value,
+        dob: document.getElementById('dob').value,
+        dod: document.getElementById('dod').value,
         medications: editIndex!==null ? getAnimals()[editIndex].medications : []
     };
-    if(editIndex!==null){
-        animals[editIndex] = animal;
-        editIndex=null;
-    } else {
-        animals.push(animal);
-    }
+    if(editIndex!==null){ animals[editIndex] = animal; editIndex=null; }
+    else { animals.push(animal); }
     localStorage.setItem('animals', JSON.stringify(animals));
     loadAnimals();
     loadOverdueMeds();
     document.getElementById('animalForm').reset();
     document.getElementById('medicationsTable').innerHTML='';
+    document.getElementById('ageDisplay').textContent='';
 }
 
-// --- New Record ---
 function newRecord(){
-    editIndex = null;
-    medEditIndex = null;
+    editIndex = medEditIndex = null;
     document.getElementById('animalForm').reset();
     document.getElementById('medicationsTable').innerHTML='';
+    document.getElementById('ageDisplay').textContent='';
 }
 
-// --- Search ---
-function searchByTag(){
-    const tag = document.getElementById('searchTag').value.trim();
-    if(!tag) return;
+// --- Medications ---
+function addMedication(){
+    const date = document.getElementById('medDate').value;
+    const type = document.getElementById('medType').value.trim();
+    const qty = document.getElementById('medQuantity').value.trim();
+    const next = document.getElementById('medNextDue').value;
+    if(!date || !type) { alert("Date and type required"); return; }
     const animals = getAnimals();
-    const idx = animals.findIndex(a=>a.tag.toLowerCase()===tag.toLowerCase());
-    if(idx>=0){
-        editAnimal(idx);
-    } else {
-        alert("Tag not found");
-    }
+    const med = {date,type,qty,next};
+    if(editIndex===null){ alert("Select an animal first"); return; }
+    const animal = animals[editIndex];
+    if(!animal.medications) animal.medications=[];
+    animal.medications.push(med);
+    localStorage.setItem('animals', JSON.stringify(animals));
+    loadMedicationTable(animal.medications);
 }
 
-function searchByTattoo(){
-    const tattoo = document.getElementById('searchTattoo').value.trim();
-    if(!tattoo) return;
+function loadMedicationTable(meds){
+    const table = document.getElementById('medicationsTable');
+    table.innerHTML="<tr><th>Date</th><th>Type</th><th>Qty</th><th>Next Due</th><th>Actions</th></tr>";
+    meds.forEach((m,i)=>{
+        const row = table.insertRow();
+        row.insertCell(0).innerText = m.date;
+        row.insertCell(1).innerText = m.type;
+        row.insertCell(2).innerText = m.qty;
+        row.insertCell(3).innerText = m.next;
+        row.insertCell(4).innerHTML = `<button onclick="editMedication(${i})">Edit</button>
+                                       <button onclick="deleteMedication(${i})">Delete</button>`;
+    });
+}
+
+function editMedication(idx){
     const animals = getAnimals();
-    const idx = animals.findIndex(a => a.tattoo.toLowerCase() === tattoo.toLowerCase());
-    if(idx>=0){
-        editAnimal(idx);
-    } else {
-        alert("Tattoo not found");
-    }
+    const med = animals[editIndex].medications[idx];
+    document.getElementById('medDate').value = med.date;
+    document.getElementById('medType').value = med.type;
+    document.getElementById('medQuantity').value = med.qty;
+    document.getElementById('medNextDue').value = med.next;
+    animals[editIndex].medications.splice(idx,1);
+    localStorage.setItem('animals', JSON.stringify(animals));
+    loadMedicationTable(animals[editIndex].medications);
+}
+
+function deleteMedication(idx){
+    const animals = getAnimals();
+    animals[editIndex].medications.splice(idx,1);
+    localStorage.setItem('animals', JSON.stringify(animals));
+    loadMedicationTable(animals[editIndex].medications);
 }
 
 // --- Overdue Medications ---
 function loadOverdueMeds(){
+    const today = new Date().toISOString().split('T')[0];
     const animals = getAnimals();
     const table = document.getElementById('overdueMedsTable');
-    table.innerHTML = `
-        <tr>
-            <th>Animal Tag</th>
-            <th>Tattoo</th>
-            <th>Breed</th>
-            <th>Medication</th>
-            <th>Quantity</th>
-            <th>Next Due</th>
-        </tr>`;
-    const today = new Date().toISOString().split('T')[0];
+    table.innerHTML="<tr><th>Tag</th><th>Tattoo</th><th>Medication</th><th>Next Due</th></tr>";
     animals.forEach(a=>{
         (a.medications||[]).forEach(m=>{
-            if(m.nextDue && m.nextDue < today){
+            if(m.next && m.next < today){
                 const row = table.insertRow();
                 row.insertCell(0).innerText = a.tag;
                 row.insertCell(1).innerText = a.tattoo;
-                row.insertCell(2).innerText = a.breed;
-                row.insertCell(3).innerText = m.type;
-                row.insertCell(4).innerText = m.quantity;
-                row.insertCell(5).innerText = m.nextDue;
+                row.insertCell(2).innerText = m.type;
+                row.insertCell(3).innerText = m.next;
+                row.classList.add('overdue');
             }
         });
     });
 }
 
+// --- Search ---
+function searchByTag(){
+    const tag = document.getElementById('searchTag').value.trim();
+    const animals = getAnimals();
+    const idx = animals.findIndex(a=>a.tag===tag);
+    if(idx!==-1) editAnimal(idx);
+    else alert("Not found");
+}
+function searchByTattoo(){
+    const tat = document.getElementById('searchTattoo').value.trim();
+    const animals = getAnimals();
+    const idx = animals.findIndex(a=>a.tattoo===tat);
+    if(idx!==-1) editAnimal(idx);
+    else alert("Not found");
+}
+
+// --- Delete Animal ---
+function deleteAnimal(idx){
+    if(!confirm("Delete this animal?")) return;
+    const animals = getAnimals();
+    animals.splice(idx,1);
+    localStorage.setItem('animals', JSON.stringify(animals));
+    loadAnimals();
+    loadOverdueMeds();
+}
+
 // --- Import / Export ---
 function exportData(){
     const blob = new Blob([localStorage.getItem('animals') || '[]'], {type:'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='animals.json'; a.click();
+    const a = document.createElement('a'); 
+    a.href = URL.createObjectURL(blob); 
+    a.download='animals.json'; 
+    a.click();
 }
 
 function importData() {
     const file = document.getElementById('importFile').files[0];
     if(!file) return;
     const reader = new FileReader();
-
     reader.onload = e => {
         const imported = JSON.parse(e.target.result);
         let animals = getAnimals();
@@ -409,12 +389,10 @@ function importData() {
             }
         });
 
-        // Add new records silently
         if(newRecords.length > 0){
             animals = animals.concat(newRecords);
         }
 
-        // Handle mismatches with prompts
         if(mismatches.length > 0){
             let acceptAll=false, denyAll=false;
             for(const m of mismatches){
@@ -438,8 +416,7 @@ function importData() {
         loadOverdueMeds();
         alert(`Import complete. ${newRecords.length} new records added, ${mismatches.length} mismatched records prompted.`);
     };
-
-    reader.readAsText(file);
+       reader.readAsText(file);
 }
 </script>
 </body>
