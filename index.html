@@ -174,7 +174,6 @@ function deleteAnimal(index){
     animals.splice(index,1);
     localStorage.setItem('animals', JSON.stringify(animals));
     loadAnimals();
-    // Clear medication table if deleting currently selected animal
     if(editIndex === index){
       medEditIndex = null;
       editIndex = null;
@@ -310,10 +309,14 @@ function importData(){
 // Initialize
 initDropdowns();
 loadAnimals();
-const animals = getAnimals();
-if(animals.length>0){
-  editAnimal(0); // load first animal including medications
-}
+
+// Ensure data is loaded on page load
+window.addEventListener('load', () => {
+  const animals = getAnimals();
+  if (animals.length > 0) {
+    editAnimal(0); // populate first animal form and medications
+  }
+});
 </script>
 </body>
 </html>
