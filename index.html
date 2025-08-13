@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farm Animal Tracker</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f8f8f8; }
+    h1, h2 { text-align: center; }
+    label { display: block; margin: 5px 0 2px; }
+    input, select, textarea { width: 100%; padding: 5px; margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    button { padding: 8px 12px; margin: 5px 0; cursor: pointer; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .row > div { flex: 1; min-width: 150px; }
+</style>
+</head>
+<body>
+
+<h1 id="farmTitle">Farm Name</h1>
+<p id="farmInfo">Address | Phone</p>
+
+<h2>Set Farm Info</h2>
+<div class="row">
+    <div><input type="text" id="farmName" placeholder="Farm Name"></div>
+    <div><input type="text" id="farmAddress" placeholder="Address"></div>
+    <div><input type="text" id="farmPhone" placeholder="Phone"></div>
+    <div><button onclick="saveFarmInfo()">Save Info</button></div>
+</div>
+
+<h2>Add / Edit Animal</h2>
+<div>
+    <input type="hidden" id="animalId">
+    <label>Name:</label>
+    <input type="text" id="animalName" placeholder="Animal Name">
+    
+    <label>Breed:</label>
+    <select id="animalBreed">
+        <option value="Gelbvieh">Gelbvieh</option>
+        <option value="Balancer">Balancer</option>
+    </select>
+    
+    <label>Type:</label>
+    <select id="animalType">
+        <option value="Cow">Cow</option>
+        <option value="Bull">Bull</option>
+    </select>
+    
+    <label>Age:</label>
+    <input type="number" id="animalAge" placeholder="Age (years)">
+    
+    <label>Location / Property:</label>
+    <input type="text" id="animalLocation" placeholder="Pasture / Property Name">
+    
+    <button onclick="saveAnimal()">Save Animal</button>
+</div>
+
+<h2>Animals List</h2>
+<table id="animalTable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Breed</th>
+            <th>Type</th>
+            <th>Age</th>
+            <th>Location</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h2>Database Actions</h2>
+<button onclick="exportData()">Export Data</button>
+<input type="file" id="importFile" onchange="importData(event)">
+<button onclick="compareData()">Compare Imported Data</button>
+
+<script>
+// ---------- Farm Info ----------
+function saveFarmInfo() {
+    const name = document.getElementById('farmName').value;
+    const address = document.getElementById('farmAddress').value;
+    const phone = document.getElementById('farmPhone').value;
+    
+    const farm = { name, address, phone };
+    localStorage.setItem('farmInfo', JSON.stringify(farm));
+    loadFarmInfo();
+}
+
+function loadFarmInfo() {
+    const farm = JSON.parse(localStorage.getItem('farmInfo'));
+    if(farm) {
+        document.getElementById('farmTitle').innerText = farm.name;
+        document.getElementById('farmInfo').innerText = `${farm.address} | ${farm.phone}`;
+        document.getElementById('farmName').value = farm.name;
+        document.getElementById('farmAddress').value = farm.address;
+        document.getElementById('farmPhone').value = farm.phone;
+    }
+}
+
+// ---------- Animal Management ----------
+function getAnimals() {
+    return JSON.parse(localStorage.getItem('animals') || '[]');
+}
+
+function saveAnimal() {
+    const id = document.getElementById('animalId').value;
+    const name = document.getElementById('animalName').value;
+    const breed = document.getElementById('animalBreed').value;
+    const type = document.getElementById('animalType').value;
+    const age = document.getElementById('animalAge').value;
+    const location = document.getElementById('animalLocation').value;
+    
+    let animals = getAnimals();
+    
+    if(id) {
+        // Edit existing
+        animals = animals.map(a => a.id === id ? {id, name, breed, type, age, location} : a);
+    } else {
+        // Add new
+        animals.push({ id: Date.now().toString(), name, breed, type, age, location });
+    }
+    
+    localStorage.setItem('animals', JSON.stringify(animals));
+    clearForm();
+    loadAnimals();
+}
+
+function editAnimal(id) {
+    const animals = getAnimals();
+    const animal = animals.find(a => a.id === id);
+    if(animal) {
+        document.getElementById('animalId').value = animal.id;
+        document.getElementById('animalName').value = animal.name;
+        document.getElementById('animalBreed').value = animal.breed;
+        document.getElementById('animalType').value = animal.type;
+        document.getElementById('animalAge').value = animal.age;
+        document.getElementById('animalLocation').value = animal.location;
+    }
+}
+
+function deleteAnimal(id) {
+    let animals = getAnimals();
+    animals = animals.filter(a => a.id !== id);
+    localStorage.setItem('animals', JSON.stringify(animals));
+    loadAnimals();
+}
+
+function clearForm() {
+    document.getElementById('animalId').value = '';
+    document.getElementById('animalName').value = '';
+    document.getElementById('animalAge').value = '';
+    document.getElementById('animalLocation').value = '';
+}
+
+// ---------- Load Animals ----------
+function loadAnimals() {
+    const animals = getAnimals();
+    const tbody = document.getElementById('animalTable').querySelector('tbody');
+    tbody.innerHTML = '';
+    animals.forEach(a => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${a.name}</td>
+            <td>${a.breed}</td>
+            <td>${a.type}</td>
+            <td>${a.age}</td>
+            <td>${a.location}</td>
+            <td>
+                <button onclick="editAnimal('${a.id}')">Edit</button>
+                <button onclick="deleteAnimal('${a.id}')">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// ---------- Export / Import ----------
+function exportData() {
+    const data = {
+        farm: JSON.parse(localStorage.getItem('farmInfo') || '{}'),
+        animals: getAnimals()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'farm_database.json';
+    a.click();
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const importedData = JSON.parse(e.target.result);
+        localStorage.setItem('importedData', JSON.stringify(importedData));
+        alert('Data imported! Click "Compare Imported Data" to review differences.');
+    };
+    reader.readAsText(file);
+}
+
+function compareData() {
+    const importedData = JSON.parse(localStorage.getItem('importedData') || '{}');
+    const currentData = { farm: JSON.parse(localStorage.getItem('farmInfo') || '{}'), animals: getAnimals() };
+
+    let differences = '';
+
+    // Compare farm info
+    if(JSON.stringify(importedData.farm) !== JSON.stringify(currentData.farm)) {
+        differences += 'Farm Info differs.\n';
+        differences += `Current: ${JSON.stringify(currentData.farm)}\nImported: ${JSON.stringify(importedData.farm)}\n\n`;
+    }
+
+    // Compare animals
+    const currentIds = currentData.animals.map(a => a.id);
+    const importedIds = importedData.animals ? importedData.animals.map(a => a.id) : [];
+
+    const newAnimals = (importedData.animals || []).filter(a => !currentIds.includes(a.id));
+    const removedAnimals = currentData.animals.filter(a => !importedIds.includes(a.id));
+
+    if(newAnimals.length) differences += `New animals in import: ${JSON.stringify(newAnimals, null, 2)}\n\n`;
+    if(removedAnimals.length) differences += `Animals missing from import: ${JSON.stringify(removedAnimals, null, 2)}\n\n`;
+
+    differences = differences || 'No differences found!';
+    alert(differences);
+}
+
+// ---------- Initialize ----------
+loadFarmInfo();
+loadAnimals();
+
+</script>
+</body>
+</html
