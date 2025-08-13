@@ -17,7 +17,7 @@
 <p id="farmContact">Address / Phone</p>
 <button onclick="editFarmInfo()">Edit Farm Info</button>
 
-<h2>2 Add / Edit Animal</h2>
+<h2>3 Add / Edit Animal</h2>
 <form id="animalForm" onsubmit="saveAnimal(); return false;">
   Tag #: <input id="tag" maxlength="4" required>
   Tattoo #: <input id="tattoo" maxlength="4"><br><br>
@@ -77,42 +77,43 @@
 let editIndex = null;
 let medEditIndex = null;
 
-// Wait until page fully loads
+// Initialization on page load
 window.onload = function() {
-    // Initialize all dropdowns
-    initDropdowns();
-
-    // Load farm info
-    const farmName = localStorage.getItem('farmName');
-    const farmContact = localStorage.getItem('farmContact');
-    if(farmName) document.getElementById('farmName').textContent = farmName;
-    if(farmContact) document.getElementById('farmContact').textContent = farmContact;
-
-    // Load animals table
-    loadAnimals();
-
-    // If animals exist, load the first animal into form & medications
-    const animals = getAnimals();
-    if(animals.length > 0){
-        editAnimal(0);
-    }
-};
-
-// Dropdowns
-function initDropdowns(){
-    const defaults = {
+    // Initialize dropdowns with defaults if empty
+    const dropdownDefaults = {
         breedOptions: ['Gelbvieh','Balancer'],
         udderSuspensionOptions: ['1','2','3','4','5','6','7','8','9'],
         udderSizeOptions: ['1','2','3','4','5','6','7','8','9'],
         calvingEaseOptions: ['1','2','3','4','5'],
         docilityOptions: ['1','2','3','4','5']
     };
-    for(const key in defaults){
-        if(!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(defaults[key]));
+    for(const key in dropdownDefaults){
+        if(!localStorage.getItem(key)){
+            localStorage.setItem(key, JSON.stringify(dropdownDefaults[key]));
+        }
         populateDropdown(key, key.replace('Options',''));
     }
-}
 
+    // Initialize farm info if empty
+    if(!localStorage.getItem('farmName')) localStorage.setItem('farmName','My Farm');
+    if(!localStorage.getItem('farmContact')) localStorage.setItem('farmContact','Address / Phone');
+    document.getElementById('farmName').textContent = localStorage.getItem('farmName');
+    document.getElementById('farmContact').textContent = localStorage.getItem('farmContact');
+
+    // Initialize animals list if empty
+    if(!localStorage.getItem('animals')) localStorage.setItem('animals','[]');
+
+    // Load animals table
+    loadAnimals();
+
+    // If animals exist, populate the first animal
+    const animals = getAnimals();
+    if(animals.length > 0){
+        editAnimal(0);
+    }
+};
+
+// Dropdown functions
 function populateDropdown(key, selectId){
     const select = document.getElementById(selectId);
     select.innerHTML = '';
