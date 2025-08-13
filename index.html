@@ -174,6 +174,13 @@ function deleteAnimal(index){
     animals.splice(index,1);
     localStorage.setItem('animals', JSON.stringify(animals));
     loadAnimals();
+    // Clear medication table if deleting currently selected animal
+    if(editIndex === index){
+      medEditIndex = null;
+      editIndex = null;
+      document.getElementById('medicationsTable').innerHTML='';
+      document.getElementById('animalForm').reset();
+    }
   }
 }
 
@@ -193,8 +200,8 @@ function loadMedicationTable(meds){
     if(m.nextDue && m.nextDue < new Date().toISOString().split('T')[0]){
       row.classList.add('overdue');
     }
-    row.insertCell(4).innerHTML = `<button onclick="editMedication(${i})">Edit</button>
-                                    <button onclick="deleteMedication(${i})">Delete</button>`;
+    row.insertCell(4).innerHTML = `<button type="button" onclick="editMedication(${i})">Edit</button>
+                                    <button type="button" onclick="deleteMedication(${i})">Delete</button>`;
   });
 }
 
@@ -202,30 +209,39 @@ function addMedication(){
   if(editIndex===null){ alert("Save animal first."); return; }
   const animals = getAnimals();
   if(!animals[editIndex].medications) animals[editIndex].medications=[];
+
   const med = {
     date: document.getElementById('medDate').value,
     type: document.getElementById('medType').value,
     quantity: document.getElementById('medQuantity').value,
     nextDue: document.getElementById('medNextDue').value
   };
+
   if(medEditIndex!==null){
-    animals[editIndex].medications[medEditIndex]=med;
-    medEditIndex=null;
+    animals[editIndex].medications[medEditIndex] = med;
+    medEditIndex = null;
   } else {
     animals[editIndex].medications.push(med);
   }
+
   localStorage.setItem('animals', JSON.stringify(animals));
   loadMedicationTable(animals[editIndex].medications);
+
+  document.getElementById('medDate').value='';
+  document.getElementById('medType').value='';
+  document.getElementById('medQuantity').value='';
+  document.getElementById('medNextDue').value='';
 }
 
 function editMedication(i){
+  if(editIndex===null) return;
   const animals = getAnimals();
   const m = animals[editIndex].medications[i];
-  document.getElementById('medDate').value=m.date;
-  document.getElementById('medType').value=m.type;
-  document.getElementById('medQuantity').value=m.quantity;
-  document.getElementById('medNextDue').value=m.nextDue;
-  medEditIndex=i;
+  document.getElementById('medDate').value = m.date;
+  document.getElementById('medType').value = m.type;
+  document.getElementById('medQuantity').value = m.quantity;
+  document.getElementById('medNextDue').value = m.nextDue;
+  medEditIndex = i;
 }
 
 function deleteMedication(i){
@@ -291,9 +307,13 @@ function importData(){
   reader.readAsText(file);
 }
 
+// Initialize
 initDropdowns();
 loadAnimals();
-
+const animals = getAnimals();
+if(animals.length>0){
+  editAnimal(0); // load first animal including medications
+}
 </script>
 </body>
 </html>
