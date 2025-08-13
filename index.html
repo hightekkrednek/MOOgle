@@ -17,6 +17,10 @@
 <p id="farmContact">Address / Phone</p>
 <button onclick="editFarmInfo()">Edit Farm Info</button>
 
+<h2>Search Animal by Tag #</h2>
+<input id="searchTag" maxlength="4" placeholder="Tag #">
+<button onclick="searchByTag()">Search</button>
+
 <h2>Add / Edit Animal</h2>
 <form id="animalForm" onsubmit="saveAnimal(); return false;">
   Tag #: <input id="tag" maxlength="4" required>
@@ -295,6 +299,19 @@ function saveAnimal(){
     loadAnimals();
     document.getElementById('animalForm').reset();
     document.getElementById('medicationsTable').innerHTML='';
+}
+
+// --- Search ---
+function searchByTag(){
+    const tag = document.getElementById('searchTag').value.trim();
+    if(!tag) return;
+    const animals = getAnimals();
+    const idx = animals.findIndex(a=>a.tag.toLowerCase()===tag.toLowerCase());
+    if(idx>=0){
+        editAnimal(idx);
+    } else {
+        alert("Tag not found");
+    }
 }
 
 // --- Import/Export ---
