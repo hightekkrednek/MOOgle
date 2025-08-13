@@ -17,6 +17,10 @@
 <p id="farmContact">Address / Phone</p>
 <button onclick="editFarmInfo()">Edit Farm Info</button>
 
+<h2>Overdue Medications</h2>
+<table id="overdueMedsTable"></table>
+<button onclick="loadOverdueMeds()">Refresh Overdue List</button>
+
 <h2>Search Animal</h2>
 Tag #: <input id="searchTag" maxlength="4" placeholder="Tag #">
 <button onclick="searchByTag()">Search</button><br><br>
@@ -128,6 +132,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
     // Load table
     loadAnimals();
+    loadOverdueMeds();
 
     // Load first animal if exists
     const animals = JSON.parse(localStorage.getItem('animals'));
@@ -344,6 +349,34 @@ function searchByTattoo(){
     } else {
         alert("Tattoo not found");
     }
+}
+
+function loadOverdueMeds(){
+    const animals = getAnimals();
+    const table = document.getElementById('overdueMedsTable');
+    table.innerHTML = `
+        <tr>
+            <th>Animal Tag</th>
+            <th>Tattoo</th>
+            <th>Breed</th>
+            <th>Medication</th>
+            <th>Quantity</th>
+            <th>Next Due</th>
+        </tr>`;
+    const today = new Date().toISOString().split('T')[0];
+    animals.forEach(a=>{
+        (a.medications||[]).forEach(m=>{
+            if(m.nextDue && m.nextDue < today){
+                const row = table.insertRow();
+                row.insertCell(0).innerText = a.tag;
+                row.insertCell(1).innerText = a.tattoo;
+                row.insertCell(2).innerText = a.breed;
+                row.insertCell(3).innerText = m.type;
+                row.insertCell(4).innerText = m.quantity;
+                row.insertCell(5).innerText = m.nextDue;
+            }
+        });
+    });
 }
 
 // --- Import/Export ---
