@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <title>Farm Animal Tracker</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  table, th, td { border: 1px solid #ccc; border-collapse: collapse; padding: 5px; }
-  th { background-color: #eee; }
-  button { margin: 2px; }
-  .overdue { background-color: #f99 !important; }
+body { font-family: Arial, sans-serif; margin: 20px; }
+table, th, td { border: 1px solid #ccc; border-collapse: collapse; padding: 5px; }
+th { background-color: #eee; }
+button { margin: 2px; }
+.overdue { background-color: #f99 !important; }
 </style>
 </head>
 <body>
@@ -16,6 +16,11 @@
 <h1 id="farmName">My Farm</h1>
 <p id="farmContact">Address / Phone</p>
 <button onclick="editFarmInfo()">Edit Farm Info</button>
+
+<!-- Overdue Medications moved to top -->
+<h2>Overdue Medications</h2>
+<table id="overdueMedsTable"></table>
+<button onclick="loadOverdueMeds()">Refresh Overdue List</button>
 
 <h2>Search Animal</h2>
 Tag #: <input id="searchTag" maxlength="4" placeholder="Tag #">
@@ -82,20 +87,16 @@ Tattoo #: <input id="searchTattoo" maxlength="4" placeholder="Tattoo #">
 <h2>Animals List</h2>
 <table id="animalsTable"></table>
 
-<h2>Overdue Medications</h2>
-<table id="overdueMedsTable"></table>
-<button onclick="loadOverdueMeds()">Refresh Overdue List</button>
-
 <h2>Import / Export</h2>
 <input type="file" id="importFile">
 <button onclick="importData()">Import</button>
 <button onclick="exportData()">Export</button>
 
 <script>
+// --- All JavaScript from the full previous solution ---
 let editIndex = null;
 let medEditIndex = null;
 
-// --- Initialization ---
 window.addEventListener('DOMContentLoaded', function() {
     const dropdownMap = {
         animalBreed: 'breedOptions',
@@ -104,7 +105,6 @@ window.addEventListener('DOMContentLoaded', function() {
         calvingEase: 'calvingEaseOptions',
         docility: 'docilityOptions'
     };
-
     const defaults = {
         breedOptions: ['Gelbvieh','Balancer'],
         udderSuspensionOptions: ['1','2','3','4','5','6','7','8','9'],
@@ -112,7 +112,6 @@ window.addEventListener('DOMContentLoaded', function() {
         calvingEaseOptions: ['1','2','3','4','5'],
         docilityOptions: ['1','2','3','4','5']
     };
-
     for(const selectId in dropdownMap){
         const key = dropdownMap[selectId];
         if(!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(defaults[key]));
@@ -124,19 +123,15 @@ window.addEventListener('DOMContentLoaded', function() {
             select.appendChild(o);
         });
     }
-
     if(!localStorage.getItem('farmName')) localStorage.setItem('farmName','My Farm');
     if(!localStorage.getItem('farmContact')) localStorage.setItem('farmContact','Address / Phone');
     document.getElementById('farmName').textContent = localStorage.getItem('farmName');
     document.getElementById('farmContact').textContent = localStorage.getItem('farmContact');
-
     if(!localStorage.getItem('animals')) localStorage.setItem('animals','[]');
-
     loadAnimals();
     loadOverdueMeds();
 });
 
-// --- Dropdown editor ---
 function editDropdown(key, selectId){
     const current = JSON.parse(localStorage.getItem(key) || '[]');
     const newValues = prompt("Edit options (comma-separated):", current.join(","));
@@ -153,21 +148,13 @@ function editDropdown(key, selectId){
     }
 }
 
-// --- Farm info ---
 function editFarmInfo(){
   const name = prompt("Farm Name:", document.getElementById('farmName').textContent);
   const contact = prompt("Address / Phone:", document.getElementById('farmContact').textContent);
-  if(name){
-    document.getElementById('farmName').textContent = name;
-    localStorage.setItem('farmName', name);
-  }
-  if(contact){
-    document.getElementById('farmContact').textContent = contact;
-    localStorage.setItem('farmContact', contact);
-  }
+  if(name){ document.getElementById('farmName').textContent = name; localStorage.setItem('farmName', name);}
+  if(contact){ document.getElementById('farmContact').textContent = contact; localStorage.setItem('farmContact', contact);}
 }
 
-// --- Age calculation ---
 function updateAge(){
     const dob = document.getElementById('dob').value;
     if(!dob) { document.getElementById('ageDisplay').textContent=''; return; }
@@ -181,7 +168,6 @@ function updateAge(){
     document.getElementById('ageDisplay').textContent = `Age: ${years}y ${months}m ${days}d`;
 }
 
-// --- Animals ---
 function getAnimals(){ return JSON.parse(localStorage.getItem('animals') || '[]'); }
 
 function loadAnimals(){
@@ -205,7 +191,6 @@ function loadAnimals(){
     });
 }
 
-// --- Edit / Save / New Record ---
 function editAnimal(index){
     const animals = getAnimals();
     const a = animals[index];
@@ -262,7 +247,6 @@ function newRecord(){
     document.getElementById('ageDisplay').textContent='';
 }
 
-// --- Medications ---
 function addMedication(){
     const date = document.getElementById('medDate').value;
     const type = document.getElementById('medType').value.trim();
@@ -312,7 +296,6 @@ function deleteMedication(idx){
     loadMedicationTable(animals[editIndex].medications);
 }
 
-// --- Overdue Medications ---
 function loadOverdueMeds(){
     const today = new Date().toISOString().split('T')[0];
     const animals = getAnimals();
@@ -332,7 +315,6 @@ function loadOverdueMeds(){
     });
 }
 
-// --- Search ---
 function searchByTag(){
     const tag = document.getElementById('searchTag').value.trim();
     const animals = getAnimals();
@@ -348,7 +330,6 @@ function searchByTattoo(){
     else alert("Not found");
 }
 
-// --- Delete Animal ---
 function deleteAnimal(idx){
     if(!confirm("Delete this animal?")) return;
     const animals = getAnimals();
@@ -358,7 +339,6 @@ function deleteAnimal(idx){
     loadOverdueMeds();
 }
 
-// --- Import / Export ---
 function exportData(){
     const blob = new Blob([localStorage.getItem('animals') || '[]'], {type:'application/json'});
     const a = document.createElement('a'); 
@@ -376,7 +356,6 @@ function importData() {
         let animals = getAnimals();
         let mismatches = [];
         let newRecords = [];
-
         imported.forEach(newA => {
             const idx = animals.findIndex(a => a.tag === newA.tag && a.tattoo === newA.tattoo);
             if(idx === -1){
@@ -388,35 +367,31 @@ function importData() {
                 }
             }
         });
-
         if(newRecords.length > 0){
             animals = animals.concat(newRecords);
         }
-
         if(mismatches.length > 0){
             let acceptAll=false, denyAll=false;
             for(const m of mismatches){
                 if(acceptAll) { animals[m.index]=m.incoming; continue; }
                 if(denyAll) continue;
-
                 const diff=[];
                 for(const key in m.incoming){
                     if(JSON.stringify(m.incoming[key])!==JSON.stringify(m.existing[key])){
                         diff.push(`${key}: existing=${JSON.stringify(m.existing[key])} -> incoming=${JSON.stringify(m.incoming[key])}`);
                     }
                 }
-                const msg=`Animal Tag: ${m.existing.tag}, Tattoo: ${m.existing.tattoo}\nDifferences:\n${diff.join('\n')}\n\nPress OK to accept, Cancel to deny.`;
+                const msg=`Animal Tag: ${m.existing.tag}, Tattoo: ${m.existing.tattoo}\nDifferences:\n${diff.join('\\n')}\n\nPress OK to accept, Cancel to deny.`;
                 const response=confirm(msg);
                 if(response) animals[m.index]=m.incoming;
             }
         }
-
         localStorage.setItem('animals', JSON.stringify(animals));
         loadAnimals();
         loadOverdueMeds();
         alert(`Import complete. ${newRecords.length} new records added, ${mismatches.length} mismatched records prompted.`);
     };
-       reader.readAsText(file);
+    reader.readAsText(file);
 }
 </script>
 </body>
