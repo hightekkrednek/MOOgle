@@ -289,22 +289,21 @@ function loadMedicationsTable(){
   let table = document.getElementById('medicationsTable');
   table.innerHTML = "";
   let now = new Date(); now.setHours(0,0,0,0);
-  
+
   meds.forEach((m,i)=>{
     let r = table.insertRow();
     r.insertCell().innerText = m.date || "";
     r.insertCell().innerText = m.type || "";
     r.insertCell().innerText = m.quantity || "";
     r.insertCell().innerText = m.nextDue || "";
-    
-    // Highlight if due today or earlier
+
+    // Parse YYYY-MM-DD safely
     if(m.nextDue){
-      let due = new Date(m.nextDue); due.setHours(0,0,0,0);
-      if(due <= now){
-        r.style.backgroundColor = "#f08080";
-      }
+      let parts = m.nextDue.split('-');
+      let due = new Date(parts[0], parts[1]-1, parts[2]);
+      if(due <= now){ r.style.backgroundColor = "#f08080"; }
     }
-    
+
     let c=r.insertCell();
     c.innerHTML=`<button onclick="editMedication(${i})">Edit</button>
                  <button onclick="deleteMedication(${i})">Delete</button>`;
@@ -334,19 +333,21 @@ function deleteMedication(i){
 
 // --- Overdue Medications ---
 function loadOverdueMeds(){
-  let now=new Date(); now.setHours(0,0,0,0);
-  let table=document.getElementById('overdueMedsTable');
-  table.innerHTML="";
-  animals.forEach(a=>{
-    (a.medications||[]).forEach(m=>{
+  let now = new Date(); now.setHours(0,0,0,0);
+  let table = document.getElementById('overdueMedsTable');
+  table.innerHTML = "";
+
+  animals.forEach(a => {
+    (a.medications || []).forEach(m => {
       if(m.nextDue){
-        let due=new Date(m.nextDue); due.setHours(0,0,0,0);
-        if(due<=now){ // today or earlier
-          let r=table.insertRow();
-          r.insertCell().innerText=a.tag || "";
-          r.insertCell().innerText=m.type || "";
-          r.insertCell().innerText=m.nextDue || "";
-          r.style.backgroundColor="#f08080";
+        let parts = m.nextDue.split('-');
+        let due = new Date(parts[0], parts[1]-1, parts[2]);
+        if(due <= now){
+          let r = table.insertRow();
+          r.insertCell().innerText = a.tag || "";
+          r.insertCell().innerText = m.type || "";
+          r.insertCell().innerText = m.nextDue || "";
+          r.style.backgroundColor = "#f08080";
         }
       }
     });
