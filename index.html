@@ -43,16 +43,18 @@
   }
   th { background-color: #d6e9d9; }
   .overdue { background-color: #f08080 !important; }
+  .administered { background-color: #d3d3d3 !important; }
   #ageDisplay { font-weight: bold; margin-left: 10px; }
   form { background-color: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
   #animalsTable, #overdueMedsTable, #medicationsTable { border-radius: 4px; }
 </style>
 </head>
 <body>
+
+    <h1 style="text-align: center;">MOOgle</h1>
+    <p style="text-align: center;">Your Farm Animal Tracker</p><br>
   
-  <h1 style="text-align: center;">MOOgle</h1>
-  <p style="text-align: center;">Your Farm Animal Tracker</p><br>
-  
+
 <h1 id="farmName">My Farm</h1>
 <p id="farmContact">Address / Phone</p>
 <button onclick="editFarmInfo()">Edit Farm Info</button>
@@ -278,7 +280,8 @@ function addMedication(){
     date: document.getElementById('medDate').value || "",
     type: document.getElementById('medType').value || "",
     quantity: document.getElementById('medQuantity').value || "",
-    nextDue: document.getElementById('medNextDue').value || ""
+    nextDue: document.getElementById('medNextDue').value || "",
+    administered: false
   };
   let meds=JSON.parse(localStorage.getItem('tempMedList')||"[]");
   meds.push(med);
@@ -300,17 +303,33 @@ function loadMedicationsTable(){
     r.insertCell().innerText = m.quantity || "";
     r.insertCell().innerText = m.nextDue || "";
 
-    // Parse YYYY-MM-DD safely
-    if(m.nextDue){
+    // Highlight overdue
+    if(m.nextDue && !m.administered){
       let parts = m.nextDue.split('-');
       let due = new Date(parts[0], parts[1]-1, parts[2]);
-      if(due <= now){ r.style.backgroundColor = "#f08080"; }
+      if(due <= now){ r.classList.add('overdue'); }
     }
 
+    if(m.administered) r.classList.add('administered');
+
     let c=r.insertCell();
+    let checkboxHTML="";
+    if(m.nextDue){
+      let checkedAttr = m.administered ? "checked" : "";
+      checkboxHTML = `<label><input type="checkbox" ${checkedAttr} onchange="toggleAdministered(${i}, this)"> Administered</label>`;
+    }
     c.innerHTML=`<button onclick="editMedication(${i})">Edit</button>
-                 <button onclick="deleteMedication(${i})">Delete</button>`;
+                 <button onclick="deleteMedication(${i})">Delete</button>
+                 ${checkboxHTML}`;
   });
+}
+
+function toggleAdministered(index, checkbox){
+  let meds = JSON.parse(localStorage.getItem('tempMedList')||"[]");
+  meds[index].administered = checkbox.checked;
+  localStorage.setItem('tempMedList', JSON.stringify(meds));
+  loadMedicationsTable();
+  loadOverdueMeds();
 }
 
 function editMedication(i){
@@ -342,7 +361,7 @@ function loadOverdueMeds(){
 
   animals.forEach(a => {
     (a.medications || []).forEach(m => {
-      if(m.nextDue){
+      if(m.nextDue && !m.administered){
         let parts = m.nextDue.split('-');
         let due = new Date(parts[0], parts[1]-1, parts[2]);
         if(due <= now){
