@@ -128,7 +128,7 @@ Tattoo #: <input id="searchTattoo" maxlength="4" placeholder="Tattoo #">
 <button onclick="exportData()">Export</button>
 
 <script>
-// === Data storage ===
+// --- Data storage ---
 let animals = [];
 let breedOptions = ["Gelbvieh","Balancer"];
 let udderSuspensionOptions = [1,2,3,4,5,6,7,8,9];
@@ -137,7 +137,7 @@ let calvingEaseOptions = [1,2,3,4,5];
 let docilityOptions = [1,2,3,4,5];
 let currentAnimalIndex = null;
 
-// === Initialization ===
+// --- Initialization ---
 window.onload = function() {
   loadFarmInfo();
   populateDropdown('animalBreed', breedOptions);
@@ -187,6 +187,7 @@ function newRecord(){
   document.getElementById('animalForm').reset();
   document.getElementById('ageDisplay').innerText="";
   document.getElementById('medicationsTable').innerHTML="";
+  localStorage.setItem('tempMedList', JSON.stringify([]));
 }
 
 function saveAnimal(){
@@ -228,7 +229,7 @@ function loadAnimalsTable(){
   animals.forEach((a,i)=>{
     let r = table.insertRow();
     headers.forEach(h=>{
-      r.insertCell().innerText=a[h];
+      r.insertCell().innerText=a[h] || "";
     });
     let cell=r.insertCell();
     cell.innerHTML=`<button onclick="editAnimal(${i})">Edit</button>
@@ -269,10 +270,10 @@ function deleteAnimal(i){
 // --- Medications ---
 function addMedication(){
   let med={
-    date: document.getElementById('medDate').value,
-    type: document.getElementById('medType').value,
-    quantity: document.getElementById('medQuantity').value,
-    nextDue: document.getElementById('medNextDue').value
+    date: document.getElementById('medDate').value || "",
+    type: document.getElementById('medType').value || "",
+    quantity: document.getElementById('medQuantity').value || "",
+    nextDue: document.getElementById('medNextDue').value || ""
   };
   let meds=JSON.parse(localStorage.getItem('tempMedList')||"[]");
   meds.push(med);
@@ -286,10 +287,10 @@ function loadMedicationsTable(){
   table.innerHTML="";
   meds.forEach((m,i)=>{
     let r=table.insertRow();
-    r.insertCell().innerText=m.date;
-    r.insertCell().innerText=m.type;
-    r.insertCell().innerText=m.quantity;
-    r.insertCell().innerText=m.nextDue;
+    r.insertCell().innerText=m.date || "";
+    r.insertCell().innerText=m.type || "";
+    r.insertCell().innerText=m.quantity || "";
+    r.insertCell().innerText=m.nextDue || "";
     let c=r.insertCell();
     c.innerHTML=`<button onclick="editMedication(${i})">Edit</button>
                  <button onclick="deleteMedication(${i})">Delete</button>`;
@@ -299,10 +300,10 @@ function loadMedicationsTable(){
 function editMedication(i){
   let meds=JSON.parse(localStorage.getItem('tempMedList')||"[]");
   let m=meds[i];
-  document.getElementById('medDate').value=m.date;
-  document.getElementById('medType').value=m.type;
-  document.getElementById('medQuantity').value=m.quantity;
-  document.getElementById('medNextDue').value=m.nextDue;
+  document.getElementById('medDate').value=m.date || "";
+  document.getElementById('medType').value=m.type || "";
+  document.getElementById('medQuantity').value=m.quantity || "";
+  document.getElementById('medNextDue').value=m.nextDue || "";
   meds.splice(i,1);
   localStorage.setItem('tempMedList', JSON.stringify(meds));
   loadMedicationsTable();
@@ -324,9 +325,9 @@ function loadOverdueMeds(){
     (a.medications||[]).forEach(m=>{
       if(m.nextDue && new Date(m.nextDue)<now){
         let r=table.insertRow();
-        r.insertCell().innerText=a.tag;
-        r.insertCell().innerText=m.type;
-        r.insertCell().innerText=m.nextDue;
+        r.insertCell().innerText=a.tag || "";
+        r.insertCell().innerText=m.type || "";
+        r.insertCell().innerText=m.nextDue || "";
         r.className="overdue";
       }
     });
