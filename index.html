@@ -42,7 +42,7 @@
     text-align: left;
   }
   th { background-color: #d6e9d9; }
-  .overdue { background-color: #f9c6c6 !important; }
+  .overdue { background-color: #f08080 !important; }
   #ageDisplay { font-weight: bold; margin-left: 10px; }
   form { background-color: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
   #animalsTable, #overdueMedsTable, #medicationsTable { border-radius: 4px; }
@@ -214,6 +214,7 @@ function saveAnimal(){
   }
   localStorage.setItem('animals', JSON.stringify(animals));
   loadAnimalsTable();
+  loadOverdueMeds();
   newRecord();
 }
 
@@ -263,6 +264,7 @@ function deleteAnimal(i){
     animals.splice(i,1);
     localStorage.setItem('animals', JSON.stringify(animals));
     loadAnimalsTable();
+    loadOverdueMeds();
     newRecord();
   }
 }
@@ -279,18 +281,30 @@ function addMedication(){
   meds.push(med);
   localStorage.setItem('tempMedList', JSON.stringify(meds));
   loadMedicationsTable();
+  loadOverdueMeds();
 }
 
 function loadMedicationsTable(){
-  let meds=JSON.parse(localStorage.getItem('tempMedList')||"[]");
-  let table=document.getElementById('medicationsTable');
-  table.innerHTML="";
+  let meds = JSON.parse(localStorage.getItem('tempMedList')||"[]");
+  let table = document.getElementById('medicationsTable');
+  table.innerHTML = "";
+  let now = new Date(); now.setHours(0,0,0,0);
+  
   meds.forEach((m,i)=>{
-    let r=table.insertRow();
-    r.insertCell().innerText=m.date || "";
-    r.insertCell().innerText=m.type || "";
-    r.insertCell().innerText=m.quantity || "";
-    r.insertCell().innerText=m.nextDue || "";
+    let r = table.insertRow();
+    r.insertCell().innerText = m.date || "";
+    r.insertCell().innerText = m.type || "";
+    r.insertCell().innerText = m.quantity || "";
+    r.insertCell().innerText = m.nextDue || "";
+    
+    // Highlight if due today or earlier
+    if(m.nextDue){
+      let due = new Date(m.nextDue); due.setHours(0,0,0,0);
+      if(due <= now){
+        r.style.backgroundColor = "#f08080";
+      }
+    }
+    
     let c=r.insertCell();
     c.innerHTML=`<button onclick="editMedication(${i})">Edit</button>
                  <button onclick="deleteMedication(${i})">Delete</button>`;
@@ -307,6 +321,7 @@ function editMedication(i){
   meds.splice(i,1);
   localStorage.setItem('tempMedList', JSON.stringify(meds));
   loadMedicationsTable();
+  loadOverdueMeds();
 }
 
 function deleteMedication(i){
@@ -314,21 +329,25 @@ function deleteMedication(i){
   meds.splice(i,1);
   localStorage.setItem('tempMedList', JSON.stringify(meds));
   loadMedicationsTable();
+  loadOverdueMeds();
 }
 
 // --- Overdue Medications ---
 function loadOverdueMeds(){
-  let now=new Date();
+  let now=new Date(); now.setHours(0,0,0,0);
   let table=document.getElementById('overdueMedsTable');
   table.innerHTML="";
   animals.forEach(a=>{
     (a.medications||[]).forEach(m=>{
-      if(m.nextDue && new Date(m.nextDue)<now){
-        let r=table.insertRow();
-        r.insertCell().innerText=a.tag || "";
-        r.insertCell().innerText=m.type || "";
-        r.insertCell().innerText=m.nextDue || "";
-        r.className="overdue";
+      if(m.nextDue){
+        let due=new Date(m.nextDue); due.setHours(0,0,0,0);
+        if(due<=now){ // today or earlier
+          let r=table.insertRow();
+          r.insertCell().innerText=a.tag || "";
+          r.insertCell().innerText=m.type || "";
+          r.insertCell().innerText=m.nextDue || "";
+          r.style.backgroundColor="#f08080";
+        }
       }
     });
   });
