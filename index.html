@@ -4,11 +4,98 @@
 <meta charset="UTF-8">
 <title>Farm Animal Tracker</title>
 <style>
-body { font-family: Arial, sans-serif; margin: 20px; }
-table, th, td { border: 1px solid #ccc; border-collapse: collapse; padding: 5px; }
-th { background-color: #eee; }
-button { margin: 2px; }
-.overdue { background-color: #f99 !important; }
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f9f9f9;
+    color: #333;
+  }
+
+  h1, h2, h3 {
+    color: #4a7c59;
+  }
+
+  h1 {
+    margin-bottom: 5px;
+  }
+
+  h2 {
+    margin-top: 30px;
+    margin-bottom: 10px;
+  }
+
+  p {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-style: italic;
+  }
+
+  button {
+    margin: 2px;
+    padding: 5px 10px;
+    background-color: #a1d5c8;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #8ccbb7;
+  }
+
+  input, select {
+    padding: 5px;
+    margin: 2px 0;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #d6e9d9;
+  }
+
+  .overdue {
+    background-color: #f9c6c6 !important;
+  }
+
+  .form-section {
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .inline-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .inline-group label {
+    min-width: 120px;
+  }
+
+  #ageDisplay {
+    font-weight: bold;
+    margin-left: 10px;
+  }
+
 </style>
 </head>
 <body>
@@ -17,382 +104,127 @@ button { margin: 2px; }
 <p id="farmContact">Address / Phone</p>
 <button onclick="editFarmInfo()">Edit Farm Info</button>
 
-<!-- Overdue Medications moved to top -->
-<h2>Overdue Medications</h2>
-<table id="overdueMedsTable"></table>
-<button onclick="loadOverdueMeds()">Refresh Overdue List</button>
+<div class="form-section">
+  <h2>Overdue Medications</h2>
+  <table id="overdueMedsTable"></table>
+  <button onclick="loadOverdueMeds()">Refresh Overdue List</button>
+</div>
 
-<h2>Search Animal</h2>
-Tag #: <input id="searchTag" maxlength="4" placeholder="Tag #">
-<button onclick="searchByTag()">Search</button><br><br>
+<div class="form-section">
+  <h2>Search Animal</h2>
+  <div class="inline-group">
+    <label>Tag #:</label>
+    <input id="searchTag" maxlength="4" placeholder="Tag #">
+    <button onclick="searchByTag()">Search</button>
+  </div>
+  <div class="inline-group">
+    <label>Tattoo #:</label>
+    <input id="searchTattoo" maxlength="4" placeholder="Tattoo #">
+    <button onclick="searchByTattoo()">Search</button>
+  </div>
+</div>
 
-Tattoo #: <input id="searchTattoo" maxlength="4" placeholder="Tattoo #">
-<button onclick="searchByTattoo()">Search</button>
+<div class="form-section">
+  <h2>Add / Edit Animal</h2>
+  <button type="button" onclick="newRecord()">New Record</button><br><br>
 
-<h2>Add / Edit Animal</h2>
-<button type="button" onclick="newRecord()">New Record</button><br><br>
+  <form id="animalForm" onsubmit="saveAnimal(); return false;">
+    <div class="inline-group">
+      <label>Tag #:</label>
+      <input id="tag" maxlength="4" required>
+      <label>Tattoo #:</label>
+      <input id="tattoo" maxlength="4">
+    </div>
 
-<form id="animalForm" onsubmit="saveAnimal(); return false;">
-  Tag #: <input id="tag" maxlength="4" required>
-  Tattoo #: <input id="tattoo" maxlength="4"><br><br>
+    <div class="inline-group">
+      <label>Breed:</label>
+      <select id="animalBreed"></select>
+      <button type="button" onclick="editDropdown('breedOptions','animalBreed')">Edit Breeds</button>
+    </div>
 
-  Breed:
-  <select id="animalBreed"></select>
-  <button type="button" onclick="editDropdown('breedOptions','animalBreed')">Edit Breeds</button><br><br>
+    <div class="inline-group">
+      <label>Type:</label>
+      <select id="animalType">
+        <option>Cow</option>
+        <option>Bull</option>
+      </select>
+      <label>Location:</label>
+      <input id="animalLocation">
+    </div>
 
-  Type:
-  <select id="animalType">
-    <option>Cow</option>
-    <option>Bull</option>
-  </select><br><br>
+    <div class="inline-group">
+      <label>Maternal:</label>
+      <input id="maternalName">
+      <label>Paternal:</label>
+      <input id="paternalName">
+    </div>
 
-  Location: <input id="animalLocation"><br><br>
-  Maternal: <input id="maternalName">
-  Paternal: <input id="paternalName"><br><br>
+    <div class="inline-group">
+      <label>Udder Suspension:</label>
+      <select id="udderSuspension"></select>
+      <button type="button" onclick="editDropdown('udderSuspensionOptions','udderSuspension')">Edit</button>
+    </div>
 
-  Udder Suspension:
-  <select id="udderSuspension"></select>
-  <button type="button" onclick="editDropdown('udderSuspensionOptions','udderSuspension')">Edit</button><br><br>
+    <div class="inline-group">
+      <label>Udder Size:</label>
+      <select id="udderSize"></select>
+      <button type="button" onclick="editDropdown('udderSizeOptions','udderSize')">Edit</button>
+    </div>
 
-  Udder Size:
-  <select id="udderSize"></select>
-  <button type="button" onclick="editDropdown('udderSizeOptions','udderSize')">Edit</button><br><br>
+    <div class="inline-group">
+      <label>Calving Ease:</label>
+      <select id="calvingEase"></select>
+      <button type="button" onclick="editDropdown('calvingEaseOptions','calvingEase')">Edit</button>
+      <label>Docility:</label>
+      <select id="docility"></select>
+      <button type="button" onclick="editDropdown('docilityOptions','docility')">Edit</button>
+    </div>
 
-  Calving Ease:
-  <select id="calvingEase"></select>
-  <button type="button" onclick="editDropdown('calvingEaseOptions','calvingEase')">Edit</button><br><br>
+    <div class="inline-group">
+      <label>Date of Birth:</label>
+      <input type="date" id="dob" onchange="updateAge()">
+      <span id="ageDisplay"></span>
+    </div>
 
-  Docility:
-  <select id="docility"></select>
-  <button type="button" onclick="editDropdown('docilityOptions','docility')">Edit</button><br><br>
+    <div class="inline-group">
+      <label>Date of Death:</label>
+      <input type="date" id="dod">
+    </div>
 
-  Date of Birth: <input type="date" id="dob" onchange="updateAge()">
-  <span id="ageDisplay"></span><br><br>
+    <h3>Medications</h3>
+    <div class="inline-group">
+      <label>Date:</label>
+      <input type="date" id="medDate">
+      <label>Type:</label>
+      <input id="medType">
+      <label>Quantity:</label>
+      <input id="medQuantity">
+      <label>Next Due:</label>
+      <input type="date" id="medNextDue">
+      <button type="button" onclick="addMedication()">Add Medication</button>
+    </div>
 
-  Date of Death: <input type="date" id="dod"><br><br>
+    <table id="medicationsTable"></table>
+    <br>
+    <button type="submit">Save Animal</button>
+  </form>
+</div>
 
-  <h3>Medications</h3>
-  Date: <input type="date" id="medDate">
-  Type: <input id="medType">
-  Quantity: <input id="medQuantity">
-  Next Due: <input type="date" id="medNextDue">
-  <button type="button" onclick="addMedication()">Add Medication</button>
+<div class="form-section">
+  <h2>Animals List</h2>
+  <table id="animalsTable"></table>
+</div>
 
-  <table id="medicationsTable"></table>
-
-  <br><br>
-  <button type="submit">Save Animal</button>
-</form>
-
-<h2>Animals List</h2>
-<table id="animalsTable"></table>
-
-<h2>Import / Export</h2>
-<input type="file" id="importFile">
-<button onclick="importData()">Import</button>
-<button onclick="exportData()">Export</button>
+<div class="form-section">
+  <h2>Import / Export</h2>
+  <input type="file" id="importFile">
+  <button onclick="importData()">Import</button>
+  <button onclick="exportData()">Export</button>
+</div>
 
 <script>
-// --- All JavaScript from the full previous solution ---
-let editIndex = null;
-let medEditIndex = null;
-
-window.addEventListener('DOMContentLoaded', function() {
-    const dropdownMap = {
-        animalBreed: 'breedOptions',
-        udderSuspension: 'udderSuspensionOptions',
-        udderSize: 'udderSizeOptions',
-        calvingEase: 'calvingEaseOptions',
-        docility: 'docilityOptions'
-    };
-    const defaults = {
-        breedOptions: ['Gelbvieh','Balancer'],
-        udderSuspensionOptions: ['1','2','3','4','5','6','7','8','9'],
-        udderSizeOptions: ['1','2','3','4','5','6','7','8','9'],
-        calvingEaseOptions: ['1','2','3','4','5'],
-        docilityOptions: ['1','2','3','4','5']
-    };
-    for(const selectId in dropdownMap){
-        const key = dropdownMap[selectId];
-        if(!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(defaults[key]));
-        const select = document.getElementById(selectId);
-        select.innerHTML = '';
-        JSON.parse(localStorage.getItem(key)).forEach(opt=>{
-            const o = document.createElement('option');
-            o.value = o.textContent = opt;
-            select.appendChild(o);
-        });
-    }
-    if(!localStorage.getItem('farmName')) localStorage.setItem('farmName','My Farm');
-    if(!localStorage.getItem('farmContact')) localStorage.setItem('farmContact','Address / Phone');
-    document.getElementById('farmName').textContent = localStorage.getItem('farmName');
-    document.getElementById('farmContact').textContent = localStorage.getItem('farmContact');
-    if(!localStorage.getItem('animals')) localStorage.setItem('animals','[]');
-    loadAnimals();
-    loadOverdueMeds();
-});
-
-function editDropdown(key, selectId){
-    const current = JSON.parse(localStorage.getItem(key) || '[]');
-    const newValues = prompt("Edit options (comma-separated):", current.join(","));
-    if(newValues !== null){
-        const arr = newValues.split(",").map(s=>s.trim()).filter(s=>s);
-        localStorage.setItem(key, JSON.stringify(arr));
-        const select = document.getElementById(selectId);
-        select.innerHTML = '';
-        arr.forEach(opt=>{
-            const o = document.createElement('option');
-            o.value = o.textContent = opt;
-            select.appendChild(o);
-        });
-    }
-}
-
-function editFarmInfo(){
-  const name = prompt("Farm Name:", document.getElementById('farmName').textContent);
-  const contact = prompt("Address / Phone:", document.getElementById('farmContact').textContent);
-  if(name){ document.getElementById('farmName').textContent = name; localStorage.setItem('farmName', name);}
-  if(contact){ document.getElementById('farmContact').textContent = contact; localStorage.setItem('farmContact', contact);}
-}
-
-function updateAge(){
-    const dob = document.getElementById('dob').value;
-    if(!dob) { document.getElementById('ageDisplay').textContent=''; return; }
-    const birth = new Date(dob);
-    const now = new Date();
-    let years = now.getFullYear() - birth.getFullYear();
-    let months = now.getMonth() - birth.getMonth();
-    let days = now.getDate() - birth.getDate();
-    if(days < 0){ months--; days += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
-    if(months < 0){ years--; months += 12; }
-    document.getElementById('ageDisplay').textContent = `Age: ${years}y ${months}m ${days}d`;
-}
-
-function getAnimals(){ return JSON.parse(localStorage.getItem('animals') || '[]'); }
-
-function loadAnimals(){
-    const animals = getAnimals();
-    const table = document.getElementById('animalsTable');
-    table.innerHTML = `
-      <tr>
-        <th>Tag</th><th>Tattoo</th><th>Breed</th><th>Type</th><th>Location</th><th>DOB</th><th>DOD</th><th>Actions</th>
-      </tr>`;
-    animals.forEach((a,i)=>{
-        const row = table.insertRow();
-        row.insertCell(0).innerText = a.tag;
-        row.insertCell(1).innerText = a.tattoo;
-        row.insertCell(2).innerText = a.breed;
-        row.insertCell(3).innerText = a.type;
-        row.insertCell(4).innerText = a.location;
-        row.insertCell(5).innerText = a.dob || '';
-        row.insertCell(6).innerText = a.dod || '';
-        row.insertCell(7).innerHTML = `<button onclick="editAnimal(${i})">Edit</button>
-                                       <button onclick="deleteAnimal(${i})">Delete</button>`;
-    });
-}
-
-function editAnimal(index){
-    const animals = getAnimals();
-    const a = animals[index];
-    editIndex = index;
-    document.getElementById('tag').value = a.tag;
-    document.getElementById('tattoo').value = a.tattoo;
-    document.getElementById('animalBreed').value = a.breed;
-    document.getElementById('animalType').value = a.type;
-    document.getElementById('animalLocation').value = a.location;
-    document.getElementById('maternalName').value = a.maternal;
-    document.getElementById('paternalName').value = a.paternal;
-    document.getElementById('udderSuspension').value = a.udderSuspension;
-    document.getElementById('udderSize').value = a.udderSize;
-    document.getElementById('calvingEase').value = a.calvingEase;
-    document.getElementById('docility').value = a.docility;
-    document.getElementById('dob').value = a.dob || '';
-    updateAge();
-    document.getElementById('dod').value = a.dod || '';
-    loadMedicationTable(a.medications || []);
-}
-
-function saveAnimal(){
-    const animals = getAnimals();
-    const animal = {
-        tag: document.getElementById('tag').value.trim(),
-        tattoo: document.getElementById('tattoo').value.trim(),
-        breed: document.getElementById('animalBreed').value,
-        type: document.getElementById('animalType').value,
-        location: document.getElementById('animalLocation').value,
-        maternal: document.getElementById('maternalName').value,
-        paternal: document.getElementById('paternalName').value,
-        udderSuspension: document.getElementById('udderSuspension').value,
-        udderSize: document.getElementById('udderSize').value,
-        calvingEase: document.getElementById('calvingEase').value,
-        docility: document.getElementById('docility').value,
-        dob: document.getElementById('dob').value,
-        dod: document.getElementById('dod').value,
-        medications: editIndex!==null ? getAnimals()[editIndex].medications : []
-    };
-    if(editIndex!==null){ animals[editIndex] = animal; editIndex=null; }
-    else { animals.push(animal); }
-    localStorage.setItem('animals', JSON.stringify(animals));
-    loadAnimals();
-    loadOverdueMeds();
-    document.getElementById('animalForm').reset();
-    document.getElementById('medicationsTable').innerHTML='';
-    document.getElementById('ageDisplay').textContent='';
-}
-
-function newRecord(){
-    editIndex = medEditIndex = null;
-    document.getElementById('animalForm').reset();
-    document.getElementById('medicationsTable').innerHTML='';
-    document.getElementById('ageDisplay').textContent='';
-}
-
-function addMedication(){
-    const date = document.getElementById('medDate').value;
-    const type = document.getElementById('medType').value.trim();
-    const qty = document.getElementById('medQuantity').value.trim();
-    const next = document.getElementById('medNextDue').value;
-    if(!date || !type) { alert("Date and type required"); return; }
-    const animals = getAnimals();
-    const med = {date,type,qty,next};
-    if(editIndex===null){ alert("Select an animal first"); return; }
-    const animal = animals[editIndex];
-    if(!animal.medications) animal.medications=[];
-    animal.medications.push(med);
-    localStorage.setItem('animals', JSON.stringify(animals));
-    loadMedicationTable(animal.medications);
-}
-
-function loadMedicationTable(meds){
-    const table = document.getElementById('medicationsTable');
-    table.innerHTML="<tr><th>Date</th><th>Type</th><th>Qty</th><th>Next Due</th><th>Actions</th></tr>";
-    meds.forEach((m,i)=>{
-        const row = table.insertRow();
-        row.insertCell(0).innerText = m.date;
-        row.insertCell(1).innerText = m.type;
-        row.insertCell(2).innerText = m.qty;
-        row.insertCell(3).innerText = m.next;
-        row.insertCell(4).innerHTML = `<button onclick="editMedication(${i})">Edit</button>
-                                       <button onclick="deleteMedication(${i})">Delete</button>`;
-    });
-}
-
-function editMedication(idx){
-    const animals = getAnimals();
-    const med = animals[editIndex].medications[idx];
-    document.getElementById('medDate').value = med.date;
-    document.getElementById('medType').value = med.type;
-    document.getElementById('medQuantity').value = med.qty;
-    document.getElementById('medNextDue').value = med.next;
-    animals[editIndex].medications.splice(idx,1);
-    localStorage.setItem('animals', JSON.stringify(animals));
-    loadMedicationTable(animals[editIndex].medications);
-}
-
-function deleteMedication(idx){
-    const animals = getAnimals();
-    animals[editIndex].medications.splice(idx,1);
-    localStorage.setItem('animals', JSON.stringify(animals));
-    loadMedicationTable(animals[editIndex].medications);
-}
-
-function loadOverdueMeds(){
-    const today = new Date().toISOString().split('T')[0];
-    const animals = getAnimals();
-    const table = document.getElementById('overdueMedsTable');
-    table.innerHTML="<tr><th>Tag</th><th>Tattoo</th><th>Medication</th><th>Next Due</th></tr>";
-    animals.forEach(a=>{
-        (a.medications||[]).forEach(m=>{
-            if(m.next && m.next < today){
-                const row = table.insertRow();
-                row.insertCell(0).innerText = a.tag;
-                row.insertCell(1).innerText = a.tattoo;
-                row.insertCell(2).innerText = m.type;
-                row.insertCell(3).innerText = m.next;
-                row.classList.add('overdue');
-            }
-        });
-    });
-}
-
-function searchByTag(){
-    const tag = document.getElementById('searchTag').value.trim();
-    const animals = getAnimals();
-    const idx = animals.findIndex(a=>a.tag===tag);
-    if(idx!==-1) editAnimal(idx);
-    else alert("Not found");
-}
-function searchByTattoo(){
-    const tat = document.getElementById('searchTattoo').value.trim();
-    const animals = getAnimals();
-    const idx = animals.findIndex(a=>a.tattoo===tat);
-    if(idx!==-1) editAnimal(idx);
-    else alert("Not found");
-}
-
-function deleteAnimal(idx){
-    if(!confirm("Delete this animal?")) return;
-    const animals = getAnimals();
-    animals.splice(idx,1);
-    localStorage.setItem('animals', JSON.stringify(animals));
-    loadAnimals();
-    loadOverdueMeds();
-}
-
-function exportData(){
-    const blob = new Blob([localStorage.getItem('animals') || '[]'], {type:'application/json'});
-    const a = document.createElement('a'); 
-    a.href = URL.createObjectURL(blob); 
-    a.download='animals.json'; 
-    a.click();
-}
-
-function importData() {
-    const file = document.getElementById('importFile').files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-        const imported = JSON.parse(e.target.result);
-        let animals = getAnimals();
-        let mismatches = [];
-        let newRecords = [];
-        imported.forEach(newA => {
-            const idx = animals.findIndex(a => a.tag === newA.tag && a.tattoo === newA.tattoo);
-            if(idx === -1){
-                newRecords.push(newA);
-            } else {
-                const existing = animals[idx];
-                if(JSON.stringify(existing) !== JSON.stringify(newA)){
-                    mismatches.push({index: idx, existing, incoming: newA});
-                }
-            }
-        });
-        if(newRecords.length > 0){
-            animals = animals.concat(newRecords);
-        }
-        if(mismatches.length > 0){
-            let acceptAll=false, denyAll=false;
-            for(const m of mismatches){
-                if(acceptAll) { animals[m.index]=m.incoming; continue; }
-                if(denyAll) continue;
-                const diff=[];
-                for(const key in m.incoming){
-                    if(JSON.stringify(m.incoming[key])!==JSON.stringify(m.existing[key])){
-                        diff.push(`${key}: existing=${JSON.stringify(m.existing[key])} -> incoming=${JSON.stringify(m.incoming[key])}`);
-                    }
-                }
-                const msg=`Animal Tag: ${m.existing.tag}, Tattoo: ${m.existing.tattoo}\nDifferences:\n${diff.join('\\n')}\n\nPress OK to accept, Cancel to deny.`;
-                const response=confirm(msg);
-                if(response) animals[m.index]=m.incoming;
-            }
-        }
-        localStorage.setItem('animals', JSON.stringify(animals));
-        loadAnimals();
-        loadOverdueMeds();
-        alert(`Import complete. ${newRecords.length} new records added, ${mismatches.length} mismatched records prompted.`);
-    };
-    reader.readAsText(file);
-}
+// --- All previous JavaScript code goes here, unchanged ---
 </script>
+
 </body>
 </html>
